@@ -1,0 +1,71 @@
+<PhysiCell_settings version="1.4.1">
+	<domain>
+		<x_min>-500.0</x_min>
+		<x_max>500.0</x_max>
+		<y_min>-500.0</y_min>
+		<y_max>500.0</y_max>
+		<z_min>-10.0</z_min>
+		<z_max>10.0</z_max>
+		<dx>20.0</dx>
+		<dy>20.0</dy>
+		<dz>20.0</dz>
+		<use_2D>true</use_2D>
+	</domain>
+	
+	<overall>
+		<max_time units="min">7200.0</max_time> 
+		<time_units>min</time_units>
+		<space_units>micron</space_units>
+	</overall>
+	
+	<parallel>
+		<omp_num_threads>4</omp_num_threads>
+	</parallel> 
+	
+	<save>
+		<folder>.</folder>  
+
+		<full_data>
+			<interval units="min">6</interval>
+			<enable>True</enable>
+		</full_data>
+		 
+		<SVG>
+			<interval units="min">6</interval>
+			<enable>True</enable>
+		</SVG>
+		
+		<legacy_data>
+			<enable>false</enable>
+		</legacy_data>
+	</save>
+	
+	<user_parameters>
+		<Model_Initialization description="This is a spacer" type="double" units="dimensionless">0.0</Model_Initialization>
+		<ECM_initialization_parameters description="ECM_initialization_parameters" type="double" units="dimensionless">0.0</ECM_initialization_parameters>
+        <initial_anisotropy description="Initial ECM anisotropy" type="double" units="dimensionless">0.0</initial_anisotropy>
+		<initial_ECM_density description="Initial ECM density" type="double" units="dimensionless">0.5</initial_ECM_density>
+
+		<Lesion_intialization description="Lesion_intialization" type="double" units="dimensionless">0.0</Lesion_intialization>
+        <tumor_radius description="Initial cell mass radius" type="double" units="microns">150.0</tumor_radius>
+		<initial_leader_cell_fraction description="Average percentage of leaders initialized" type="double" units="dimensionless">0.0</initial_leader_cell_fraction>
+
+		<Cell_properties description="Cell_properties" type="double" units="dimensionless">0.0</Cell_properties>
+        <leader_adhesion description="Strength of leader cells\' cell-cell adhesion" type="double" units="dimensionless">6.5</leader_adhesion>
+        <leader_repulsion description="Strength of leader cells\' cell-cell repulsion" type="double" units="dimensionless">25.0</leader_repulsion>
+        <follower_adhesion description="Strength of follower cells\' cell-cell adhesion" type="double" units="dimensionless">6.5</follower_adhesion>
+        <follower_repulsion description="Strength of follower cells\' cell-cell repulsion" type="double" units="dimensionless">25.0</follower_repulsion>
+        <default_cell_speed description="Base/maximum cell speed" type="double" units="microns/minute">0.3</default_cell_speed>
+		<default_persistence_time description="Cell directional persistence time" type="double" units="minutes">10.0</default_persistence_time>
+		<default_chemotaxis_bias description="Chemotaxis bias for ECM following type cells" hidden="true" type="double" units="dimensionless">0.0</default_chemotaxis_bias>
+		<default_ECM_sensitivity description="Cell sensitivity to ECM orientation for ECM following type cells" type="double" units="dimensionless">1.0</default_ECM_sensitivity>
+		<oxygen_migration_bias_for_leaders description="Chemotaxis bias for non-ECM influenced cell types" type="double" units="dimensionless">0.95</oxygen_migration_bias_for_leaders>
+		<leader_motility_mode hidden="true" type="bool" units="dimensionless">true</leader_motility_mode>
+        <follower_motility_mode hidden="true" type="bool" units="dimensionless">true</follower_motility_mode>
+		<enable_ecm_.s hidden="true" type="bool">false</enable_ecm_.s>
+		
+		
+		
+	</user_parameters>
+	
+</PhysiCell_settings>
