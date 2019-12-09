@@ -3,7 +3,7 @@ out*.xml
 out*.mat
 final*.xml
 final*.mat
-initial*.xml
+#initial*.xml
 initial*.mat
 *.mp4
 AMIGOS-invasion
@@ -13,6 +13,6 @@ AMIGOS-invasion
 *.svg
 *.jpg
 *.png
-*.exe
+#*.exe
 .vscode*
 *.ipch
