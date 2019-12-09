@@ -1,4 +1,3 @@
 #!/bin/sh
 
-/usr/bin/invoke_app "$@" -C "start_jupyter -A -T @tool pc_ECM_model_for_nanoHUB.ipynb" -t physicellecm \
-                         -u anaconda3-5.1
+/usr/bin/invoke_app "$@" -C "start_jupyter -A -T @tool leadfollow.ipynb" -t leadfollow -u anaconda3-5.1

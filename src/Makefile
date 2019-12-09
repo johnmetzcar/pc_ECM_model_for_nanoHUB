@@ -30,7 +30,9 @@ ARCH := native # best auto-tuning
 # ARCH := nocona #64-bit pentium 4 or later 
 
 # CFLAGS := -march=$(ARCH) -Ofast -s -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
-CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
+# remove the -march arg to avoid SIGILL error on nanoHUB
+CFLAGS := -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
+#CFLAGS := -g -march=$(ARCH) -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 
 COMPILE_COMMAND := $(CC) $(CFLAGS) 
 
@@ -53,8 +55,8 @@ ALL_OBJECTS := $(PhysiCell_OBJECTS) $(PhysiCell_custom_module_OBJECTS)
 
 #compile the project 
 	
-all: main.cpp $(ALL_OBJECTS)
-	$(COMPILE_COMMAND) -o $(PROGRAM_NAME) $(ALL_OBJECTS) main.cpp 
+all: main-ecm.cpp $(ALL_OBJECTS)
+	$(COMPILE_COMMAND) -o $(PROGRAM_NAME) $(ALL_OBJECTS) main-ecm.cpp 
 
 # PhysiCell core components	
 
@@ -138,14 +140,15 @@ AMIGOS-invasion.o: ./custom_modules/AMIGOS-invasion.cpp
 
 # cleanup
 
-reset:
-	rm -f *.cpp 
-	cp ./sample_projects/Makefile-default Makefile 
-	rm -f ./custom_modules/*
-	touch ./custom_modules/empty.txt 
+#reset:
+#	rm -f *.cpp 
+#	cp ./sample_projects/Makefile-default Makefile 
+#	rm -f ./custom_modules/*
+#	touch ./custom_modules/empty.txt 
 	
 # next 2 targets for nanoHUB
-install: all
+install: 
+	. /etc/environ.sh; use -e -r anaconda3-5.1; make all
 	cp $(PROGRAM_NAME) ../bin
 
 distclean: clean
@@ -154,6 +157,13 @@ distclean: clean
 clean:
 	rm -f *.o
 	rm -f $(PROGRAM_NAME)
+
+data-cleanup:
+	rm -f *.mat
+	rm -f *.xml
+	rm -f *.svg
+	rm -f ./output/*
+	touch ./output/empty.txt
 
 data-cleanup-all:
 	rm -f *.mat
@@ -184,6 +194,12 @@ zip:
 
 zip-data:
 	zip -r latest-data.zip Makefile* *.cpp *.h BioFVM/* config/* core/* custom_modules/* matlab/* modules/* output/*.xml output/*.mat output/*.svg output/*.png output/*.m output/*.mov output/*.gif output/*.mp4
+	cp latest-data.zip $$(date +%b_%d_%Y_%H%M).zip
+	cp latest-data.zip VERSION_$(VERSION).zip 
+	mv *.zip data_archives/
+
+zip-source:
+	zip -r latest-data.zip Makefile* *.cpp *.h BioFVM/* config/* core/* custom_modules/* matlab/* modules/* output/*.m
 	cp latest-data.zip $$(date +%b_%d_%Y_%H%M).zip
 	cp latest-data.zip VERSION_$(VERSION).zip 
 	mv *.zip data_archives/
