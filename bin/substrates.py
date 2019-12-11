@@ -1047,10 +1047,9 @@ class SubstrateTab(object):
             snapshot = xml_fname[:-4]
             # load cell and microenvironment data
             # mcds = pyMCDS(snapshot + '.xml', folder)
-            mcds = pyMCDS(snapshot + '.xml', '.')
+            mcds = pyMCDS(snapshot + '.xml', self.output_dir)
             # load ECM data
-            # mcds.load_ecm(snapshot + '_ECM.mat', folder)
-            mcds.load_ecm(snapshot + '_ECM.mat', '.')
+            mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
 
             cell_df = mcds.get_cell_df()
             xx, yy = mcds.get_2D_mesh()
