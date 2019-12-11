@@ -54,10 +54,15 @@ class SubstrateTab(object):
 
         self.use_defaults = True
 
-        self.svg_delta_t = 0
-        self.substrate_delta_t = 0
+        self.svg_delta_t = 1
+        self.substrate_delta_t = 1
         self.svg_frame = 1
         self.substrate_frame = 1
+
+        self.customized_output_freq = False
+        self.therapy_activation_time = 1000000
+        self.max_svg_frame_pre_therapy = 1000000
+        self.max_substrate_frame_pre_therapy = 1000000
 
         self.svg_xmin = 0
 
@@ -70,7 +75,6 @@ class SubstrateTab(object):
         # self.x_range = 2000.
         # self.y_range = 2000.
 
-        self.cells_alpha = 0.7
         self.show_nucleus = False
         self.show_edge = True
         self.show_vectors = True
@@ -108,9 +112,10 @@ class SubstrateTab(object):
 
         self.fontsize = 20
 
+            # description='# cell frames',
         self.max_frames = BoundedIntText(
             min=0, max=99999, value=max_frames,
-            description='# cell frames',
+            description='# frames',
            layout=Layout(width='160px'),
         )
         self.max_frames.observe(self.update_max_frames)
@@ -239,7 +244,7 @@ class SubstrateTab(object):
         self.cell_edges_toggle = Checkbox(
             description='edges',
             disabled=False,
-            value= self.show_edge,
+            value=self.show_edge,
 #           layout=Layout(width=constWidth2),
         )
         def cell_edges_toggle_cb(b):
@@ -252,7 +257,6 @@ class SubstrateTab(object):
 
         self.cell_edges_toggle.observe(cell_edges_toggle_cb)
 
-        #----
         self.cells_toggle = Checkbox(
             description='Cells',
             disabled=False,
@@ -264,15 +268,17 @@ class SubstrateTab(object):
             self.i_plot.update()
             if (self.cells_toggle.value):
                 self.cell_edges_toggle.disabled = False
+                self.cell_nucleus_toggle.disabled = False
             else:
                 self.cell_edges_toggle.disabled = True
+                self.cell_nucleus_toggle.disabled = True
 
         self.cells_toggle.observe(cells_toggle_cb)
 
         #---------------------
         self.substrates_toggle = Checkbox(
             description='Substrates',
-            disabled=True,
+            disabled=False,
             value=True,
 #           layout=Layout(width=constWidth2),
         )
@@ -292,7 +298,7 @@ class SubstrateTab(object):
 
         self.substrates_toggle.observe(substrates_toggle_cb)
 
-
+        #------
         self.vectors_toggle = Checkbox(
             description='Vectors',
             disabled=False,
@@ -310,7 +316,7 @@ class SubstrateTab(object):
 
         self.vectors_toggle.observe(vectors_toggle_cb)
 
-        #---------------------
+        #--------------
         self.grid_toggle = Checkbox(
             description='grid',
             disabled=False,
@@ -354,6 +360,7 @@ class SubstrateTab(object):
                             flex_direction='row',
                             display='flex'))
         # row2b = Box( [self.substrates_toggle, self.grid_toggle], layout=Layout(border='1px solid black',
+        # row2b = Box( [self.substrates_toggle, ], layout=Layout(border='1px solid black',
         row2b = Box( [self.substrates_toggle, self.vectors_toggle], layout=Layout(border='1px solid black',
                             width='50%',
                             height='',
@@ -401,7 +408,7 @@ class SubstrateTab(object):
         if (uep):
             for elm in uep.findall('variable'):
                 # print("-----> ",elm.attrib['name'])
-                if 'signal' in elm.attrib['name']:  # unique to ECM app; don't want these
+                if 'signal' in elm.attrib['name']:  # rwh: unique to ECM app; don't want these
                     continue
                 else:
                     self.field_min_max[elm.attrib['name']] = [0., 1.]
@@ -426,7 +433,7 @@ class SubstrateTab(object):
     #     self.mcds_plot.children[0].max = self.max_frames.value
 
 #------------------------------------------------------------------------------
-    def update_params(self, config_tab):
+    def update_params(self, config_tab, user_params_tab):
         # xml_root.find(".//x_min").text = str(self.xmin.value)
         # xml_root.find(".//x_max").text = str(self.xmax.value)
         # xml_root.find(".//dx").text = str(self.xdelta.value)
@@ -461,14 +468,24 @@ class SubstrateTab(object):
             self.figsize_width_svg = 12.0 * ratio
             self.figsize_height_svg = 12.0 
 
+        self.svg_flag = config_tab.toggle_svg.value
+        self.substrates_flag = config_tab.toggle_mcds.value
+        # print("substrates: update_params(): svg_flag, toggle=",self.svg_flag,config_tab.toggle_svg.value)        
+        # print("substrates: update_params(): self.substrates_flag = ",self.substrates_flag)
         self.svg_delta_t = config_tab.svg_interval.value
         self.substrate_delta_t = config_tab.mcds_interval.value
         self.modulo = int(self.substrate_delta_t / self.svg_delta_t)
         # print("substrates: update_params(): modulo=",self.modulo)        
 
+        if self.customized_output_freq:
+#            self.therapy_activation_time = user_params_tab.therapy_activation_time.value   # NOTE: edit for user param name
+            # print("substrates: update_params(): therapy_activation_time=",self.therapy_activation_time)
+            self.max_svg_frame_pre_therapy = int(self.therapy_activation_time/self.svg_delta_t)
+            self.max_substrate_frame_pre_therapy = int(self.therapy_activation_time/self.substrate_delta_t)
+
 #------------------------------------------------------------------------------
 #    def update(self, rdir):
-#   Called from pc4biorobots.py (among other places?)
+#   Called from driver module (e.g., pc4*.py) (among other places?)
     def update(self, rdir=''):
         # with debug_view:
         #     print("substrates: update rdir=", rdir)        
@@ -506,6 +523,11 @@ class SubstrateTab(object):
         if len(all_files) > 0:
             last_file = all_files[-1]
             self.max_frames.value = int(last_file[-12:-4])  # assumes naming scheme: "snapshot%08d.svg"
+        else:
+            substrate_files = sorted(glob.glob(os.path.join(self.output_dir, 'output*.xml')))
+            if len(substrate_files) > 0:
+                last_file = substrate_files[-1]
+                self.max_frames.value = int(last_file[-12:-4])
 
     def download_svg_cb(self):
         file_str = os.path.join(self.output_dir, '*.svg')
@@ -670,6 +692,9 @@ class SubstrateTab(object):
                 # remove the ".00" on minutes
                 self.title_str += "   cells: " + svals[2] + "d, " + svals[4] + "h, " + svals[7][:-3] + "m"
 
+                # self.cell_time_mins = int(svals[2])*1440 + int(svals[4])*60 + int(svals[7][:-3])
+                # self.title_str += "   cells: " + str(self.cell_time_mins) + "m"   # rwh
+
             # print("width ",child.attrib['width'])
             # print('attrib=',child.attrib)
             # if (child.attrib['id'] == 'tissue'):
@@ -801,8 +826,7 @@ class SubstrateTab(object):
         if (self.show_edge):
             try:
                 # plt.scatter(xvals,yvals, s=markers_size, c=rgbs, edgecolor='black', linewidth=0.5)
-                # self.circles(xvals,yvals, s=rvals, color=rgbs, edgecolor='black', linewidth=0.5)
-                self.circles(xvals,yvals, s=rvals, color=rgbs, edgecolor='black', linewidth=0.5, alpha=self.cells_alpha)
+                self.circles(xvals,yvals, s=rvals, color=rgbs, edgecolor='black', linewidth=0.5)
                 # cell_circles = self.circles(xvals,yvals, s=rvals, color=rgbs, edgecolor='black', linewidth=0.5)
                 # plt.sci(cell_circles)
             except (ValueError):
@@ -833,6 +857,14 @@ class SubstrateTab(object):
         # print("plot_substrate(): frame*self.svg_delta_t  = ",frame*self.svg_delta_t)
         self.title_str = ''
 
+        # Recall:
+        # self.svg_delta_t = config_tab.svg_interval.value
+        # self.substrate_delta_t = config_tab.mcds_interval.value
+        # self.modulo = int(self.substrate_delta_t / self.svg_delta_t)
+        # self.therapy_activation_time = user_params_tab.therapy_activation_time.value
+
+        # print("plot_substrate(): pre_therapy: max svg, substrate frames = ",max_svg_frame_pre_therapy, max_substrate_frame_pre_therapy)
+
         # Assume: # .svg files >= # substrate files
 #        if (self.cells_toggle.value):
 
@@ -842,7 +874,17 @@ class SubstrateTab(object):
             # self.fig = plt.figure(figsize=(14, 15.6))
             # self.fig = plt.figure(figsize=(15.0, 12.5))
             self.fig = plt.figure(figsize=(self.figsize_width_substrate, self.figsize_height_substrate))
-            self.substrate_frame = int(frame / self.modulo)
+
+            # rwh - funky way to figure out substrate frame for pc4cancerbots (due to user-defined "save_interval*")
+            # self.cell_time_mins 
+            # self.substrate_frame = int(frame / self.modulo)
+            if (self.customized_output_freq and (frame > self.max_svg_frame_pre_therapy)):
+                # max_svg_frame_pre_therapy = int(self.therapy_activation_time/self.svg_delta_t)
+                # max_substrate_frame_pre_therapy = int(self.therapy_activation_time/self.substrate_delta_t)
+                self.substrate_frame = self.max_substrate_frame_pre_therapy + (frame - self.max_svg_frame_pre_therapy)
+            else:
+                self.substrate_frame = int(frame / self.modulo)
+
             # print("plot_substrate(): self.substrate_frame=",self.substrate_frame)        
 
             # if (self.substrate_frame > (self.num_substrates-1)):
@@ -872,10 +914,13 @@ class SubstrateTab(object):
     #        tree = ET.parse(xml_fname)
             tree = ET.parse(full_xml_fname)
             xml_root = tree.getroot()
-            mins= round(int(float(xml_root.find(".//current_time").text)))  # TODO: check units = mins
+            mins = round(int(float(xml_root.find(".//current_time").text)))  # TODO: check units = mins
+            self.substrate_mins= round(int(float(xml_root.find(".//current_time").text)))  # TODO: check units = mins
+
             hrs = int(mins/60)
             days = int(hrs/24)
             self.title_str = 'substrate: %dd, %dh, %dm' % (int(days),(hrs%24), mins - (hrs*60))
+            # self.title_str = 'substrate: %dm' % (mins )   # rwh
 
 
             info_dict = {}
@@ -991,10 +1036,10 @@ class SubstrateTab(object):
             snapshot = xml_fname[:-4]
             # load cell and microenvironment data
             # mcds = pyMCDS(snapshot + '.xml', folder)
-            mcds = pyMCDS(snapshot + '.xml','.')
+            mcds = pyMCDS(snapshot + '.xml')
             # load ECM data
             # mcds.load_ecm(snapshot + '_ECM.mat', folder)
-            mcds.load_ecm(snapshot + '_ECM.mat','.')
+            mcds.load_ecm(snapshot + '_ECM.mat')
 
             cell_df = mcds.get_cell_df()
             xx, yy = mcds.get_2D_mesh()
@@ -1044,6 +1089,7 @@ class SubstrateTab(object):
             # add quiver layer with scaled arrows ###
             plt.quiver(xx[mask], yy[mask], dx[mask], dy[mask], pivot='middle', angles='xy', units='width', headwidth=0, width=.0015)
 
+
         # --------  Plot the cells (on top of substrate and vectors)
         if (self.cells_toggle.value):
             if (not self.substrates_toggle.value):
@@ -1053,7 +1099,6 @@ class SubstrateTab(object):
             self.svg_frame = frame
             # print('plot_svg with frame=',self.svg_frame)
             self.plot_svg(self.svg_frame)
-
 
         # plt.subplot(grid[2, 0])
         # oxy_ax = self.fig.add_subplot(grid[2:, 0:1])
@@ -1071,17 +1116,17 @@ class SubstrateTab(object):
         # oxy_ax.plot(x, 300*np.sin(x))
 
     #---------------------------------------------------------------------------
-    def plot_plots(self, frame):
-        # if (self.first_time):
-        #     self.svg_delta_t = 1
-        #     self.substrate_delta_t = 1
-        #     self.first_time = False
+    # def plot_plots(self, frame):
+    #     # if (self.first_time):
+    #     #     self.svg_delta_t = 1
+    #     #     self.substrate_delta_t = 1
+    #     #     self.first_time = False
 
-        if (self.substrates_toggle.value):
-            self.fig = plt.figure(figsize=(14, 15.6))
-        else:  # only cells being displayed (maybe)
-            self.fig = plt.figure(figsize=(12, 12))
-        # grid = plt.GridSpec(4, 3, wspace=0.10, hspace=0.2)   # (nrows, ncols)
-        # self.plot_substrate(frame, grid)
-        self.plot_substrate(frame)
-        # self.plot_svg(frame)
+    #     if (self.substrates_toggle.value):
+    #         self.fig = plt.figure(figsize=(14, 15.6))
+    #     else:  # only cells being displayed (maybe)
+    #         self.fig = plt.figure(figsize=(12, 12))
+    #     # grid = plt.GridSpec(4, 3, wspace=0.10, hspace=0.2)   # (nrows, ncols)
+    #     # self.plot_substrate(frame, grid)
+    #     self.plot_substrate(frame)
+    #     # self.plot_svg(frame)

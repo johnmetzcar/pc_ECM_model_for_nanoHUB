@@ -88,7 +88,7 @@ def read_config_cb(_b):
     if is_dir:
         # svg.update(read_config.value)
         # print("read_config_cb():  is_dir True, calling update_params")
-        sub.update_params(config_tab)
+        sub.update_params(config_tab, user_tab)
         sub.update(read_config.value)
     # else:  # may want to distinguish "DEFAULT" from other saved .xml config files
         # FIXME: really need a call to clear the visualizations
@@ -113,7 +113,7 @@ def write_config_file(name):
     tree.write(name)
 
     # update substrate mesh layout (beware of https://docs.python.org/3/library/functions.html#round)
-    sub.update_params(config_tab)
+    sub.update_params(config_tab, user_tab)
     # sub.numx =  math.ceil( (config_tab.xmax.value - config_tab.xmin.value) / config_tab.xdelta.value )
     # sub.numy =  math.ceil( (config_tab.ymax.value - config_tab.ymin.value) / config_tab.ydelta.value )
     # print("leadfollow.py: ------- sub.numx, sub.numy = ", sub.numx, sub.numy)
@@ -229,6 +229,17 @@ def run_done_func(s, rdir):
 def run_sim_func(s):
     # with debug_view:
     #     print('run_sim_func')
+
+    if config_tab.toggle_svg.value == False:
+        sub.cells_toggle.value = False
+        sub.cells_toggle.disabled = True
+    else:
+        sub.cells_toggle.disabled = False
+    if config_tab.toggle_mcds.value == False:
+        sub.substrates_toggle.value = False
+        sub.substrates_toggle.disabled = True
+    else:
+        sub.substrates_toggle.disabled = False
 
     # make sure we are where we started
     os.chdir(homedir)
