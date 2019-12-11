@@ -1030,8 +1030,15 @@ class SubstrateTab(object):
             #     # ax.set_ylim(ys[0], ys[-1])
 
 
-        #---------  Plot vectors (on top of substrate)
+        #---------  Plot vectors 
         if (self.show_vectors):
+            if (not self.substrates_toggle.value):
+                self.fig = plt.figure(figsize=(self.figsize_width_svg, self.figsize_height_svg))
+                if (self.customized_output_freq and (frame > self.max_svg_frame_pre_therapy)):
+                    self.substrate_frame = self.max_substrate_frame_pre_therapy + (frame - self.max_svg_frame_pre_therapy)
+                else:
+                    self.substrate_frame = int(frame / self.modulo)
+
             xml_fname = "output%08d.xml" % self.substrate_frame
             snapshot = xml_fname[:-4]
             # load cell and microenvironment data
@@ -1092,7 +1099,7 @@ class SubstrateTab(object):
 
         # --------  Plot the cells (on top of substrate and vectors)
         if (self.cells_toggle.value):
-            if (not self.substrates_toggle.value):
+            if (not self.substrates_toggle.value and not self.show_vectors):
                 # self.fig = plt.figure(figsize=(12, 12))
                 self.fig = plt.figure(figsize=(self.figsize_width_svg, self.figsize_height_svg))
             # self.plot_svg(frame)
