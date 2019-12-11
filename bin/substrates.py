@@ -75,6 +75,7 @@ class SubstrateTab(object):
         # self.x_range = 2000.
         # self.y_range = 2000.
 
+        self.cells_alpha = 0.7  
         self.show_nucleus = False
         self.show_edge = True
         self.show_vectors = True
@@ -826,14 +827,14 @@ class SubstrateTab(object):
         if (self.show_edge):
             try:
                 # plt.scatter(xvals,yvals, s=markers_size, c=rgbs, edgecolor='black', linewidth=0.5)
-                self.circles(xvals,yvals, s=rvals, color=rgbs, edgecolor='black', linewidth=0.5)
+                self.circles(xvals,yvals, s=rvals, color=rgbs, edgecolor='black', linewidth=0.5, alpha=self.cells_alpha)
                 # cell_circles = self.circles(xvals,yvals, s=rvals, color=rgbs, edgecolor='black', linewidth=0.5)
                 # plt.sci(cell_circles)
             except (ValueError):
                 pass
         else:
             # plt.scatter(xvals,yvals, s=markers_size, c=rgbs)
-            self.circles(xvals,yvals, s=rvals, color=rgbs)
+            self.circles(xvals,yvals, s=rvals, color=rgbs, alpha=self.cells_alpha)
 
         # if (self.show_tracks):
         #     for key in self.trackd.keys():
@@ -870,7 +871,10 @@ class SubstrateTab(object):
 
         # if (self.substrates_toggle.value and frame*self.substrate_delta_t <= self.svg_frame*self.svg_delta_t):
         # if (self.substrates_toggle.value and (frame % self.modulo == 0)):
+        self.cells_alpha = 1.0  
         if (self.substrates_toggle.value):
+            self.cells_alpha = 0.7  
+
             # self.fig = plt.figure(figsize=(14, 15.6))
             # self.fig = plt.figure(figsize=(15.0, 12.5))
             self.fig = plt.figure(figsize=(self.figsize_width_substrate, self.figsize_height_substrate))
