@@ -67,25 +67,25 @@ that will terminate (not pause) the simulation.
     <li>
         <p>Realign the fibers/ECM proportionally to the cell's speed, a base rate, and how aligned the fibers already are:</p>
 
-        <img src="../images/alignment.png" class="center" />
+        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/alignment.png" class="center" />
 
         <p>Using the above rate, fibers are updated with time using the following differential equation:</p>
 
-        <img src="../images/follower_direction.png" class="center" />
+        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/follower_direction.png" class="center" />
     </li>
     <li>
         <p>Alter anisotropy locally in proportion to cell speed:</p>
 
-        <img src="../images/anisotropy-speed.png" class="center" />
+        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/anisotropy-speed.png" class="center" />
 
         <p>Using the above function, anisotropy is updated and bound between 0 and 1:</p>
 
-        <img src="../images/anisotropy_update.png" class="center" />
+        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/anisotropy_update.png" class="center" />
     </li>
     <li>
         <p>Increase and decrease density (secrete/destroy) to a specific target:</p>
 
-        <img src="../images/density.png" class="center" />
+        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/density.png" class="center" />
     </li>
 </ul>
 
@@ -93,19 +93,19 @@ that will terminate (not pause) the simulation.
 
 <p>Fiber orientation influences the cell's motility vector, while anisotropy controls the amount of influence it has.  To account for the lack of preferred direction of travel along ECM fibers but our storage of the orientation as a vector, we decompose the cell’s motility vector in the direction along the fiber (within that voxel) and the direction perpendicular to the fiber by:</p>
 
-<img src="../images/mot_decomposed.png" class="center" />
+<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_decomposed.png" class="center" />
 
 <p>We then take two dot products: the dot product of the motility vector and fiber direction, and the dot product with the motility vector and vector perpendicular to the fiber.</p>
 
-<img src="../images/mot_dots.png" class="center" />
+<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_dots.png" class="center" />
 
 <p>The actual motility vector is calculated using the equation below:</p>
 
-<img src="../images/mot_actual.png" class="center" />
+<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_actual.png" class="center" />
 
 <p>Where &gamma; is the produce of the cell's sensitivity to the ECM and the local anisotropy:</p>
 
-<img src="../images/mot_gamma.png" class="center" />
+<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_gamma.png" class="center" />
 
 <p>Overall, this lets the cell’s preferred direction of travel select which direction along the ECM fiber it moves. Cells that are on completely anisotropic ECM and that are highly sensitive to ECM orientation will conduct a 1-D random walk along the fibers. </p>
 
@@ -115,7 +115,7 @@ that will terminate (not pause) the simulation.
 <p>Too much density and cells cannot pass through the dense fibers</p>
 <p>This is represented this piecewise function with a peak at &rho;<sub>ideal</sub>:</p>
 
-<img src="../images/speed_function.png" class="center" />
+<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/speed_function.png" class="center" />
 
 
 <h2>Basic Instructions</h2>
