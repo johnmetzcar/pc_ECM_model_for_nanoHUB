@@ -1,5 +1,5 @@
 VERSION := 1.4.1
-PROGRAM_NAME:= myproj
+PROGRAM_NAME := AMIGOS-invasion
 
 # CC := g++
 # CC := g++-mp-7 # typical macports compiler name
@@ -30,8 +30,7 @@ ARCH := native # best auto-tuning
 # ARCH := nocona #64-bit pentium 4 or later 
 
 # CFLAGS := -march=$(ARCH) -Ofast -s -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
-# remove the -march arg to avoid SIGILL error on nanoHUB
-CFLAGS := -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
+CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 #CFLAGS := -g -march=$(ARCH) -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 
 COMPILE_COMMAND := $(CC) $(CFLAGS) 
@@ -146,17 +145,9 @@ AMIGOS-invasion.o: ./custom_modules/AMIGOS-invasion.cpp
 #	rm -f ./custom_modules/*
 #	touch ./custom_modules/empty.txt 
 	
-# next 2 targets for nanoHUB
-install: 
-	. /etc/environ.sh; use -e -r anaconda3-5.1; make all
-	cp $(PROGRAM_NAME) ../bin
-
-distclean: clean
-	rm -f ../bin/$(PROGRAM_NAME)
-
 clean:
 	rm -f *.o
-	rm -f $(PROGRAM_NAME)
+	rm -f $(PROGRAM_NAME)*
 
 data-cleanup:
 	rm -f *.mat
