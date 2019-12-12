@@ -1,19 +1,10 @@
-*.o
-out*.xml
-out*.mat
-final*.xml
-final*.mat
-#initial*.xml
-initial*.mat
-*.mp4
-AMIGOS-invasion
-*.pov
-*.xcworkspace
-*.avi
-*.svg
-*.jpg
-*.png
-#*.exe
-.vscode*
+# Python ignores
+__pycache__
 *.ipch
 .ipynb_checkpoints
+
+# Dev ignores
+.vscode*
+
+# Misc ignores
+.DS_Store

@@ -1,5 +1,5 @@
 VERSION := 1.4.1
-PROGRAM_NAME := AMIGOS-invasion
+PROGRAM_NAME := mygui
 
 # CC := g++
 # CC := g++-mp-7 # typical macports compiler name
