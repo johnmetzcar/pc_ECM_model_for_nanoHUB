@@ -73,8 +73,8 @@
 #include "./modules/PhysiCell_standard_modules.h" 
 
 // custom user modules 
-
-#include "./custom_modules/AMIGOS-invasion.h" 
+#include "./custom_modules/AMIGOS-invasion_uncoupled.h" 
+// #include "./custom_modules/AMIGOS-invasion.h" 
 // #include "./custom_modules/ECM.h"
 	
 using namespace BioFVM;
@@ -112,6 +112,7 @@ int main( int argc, char* argv[] )
 
 	/* Microenvironment setup */ 
 	setup_microenvironment();
+    setup_extracellular_matrix(); // NEW LINE!!!!
 
 	/* PhysiCell setup */ 
  	

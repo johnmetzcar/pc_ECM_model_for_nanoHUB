@@ -13,11 +13,7 @@ from matplotlib.collections import PatchCollection
 import matplotlib.colors as mplc
 from collections import deque
 import numpy as np
-
-# from image_processing_for_physicell import *
-#from pyMCDS import *
-from pyMCDS_ECM import *
-
+from pyMCDS import *
 import scipy.io
 import xml.etree.ElementTree as ET  # https://docs.python.org/2/library/xml.etree.elementtree.html
 import glob
@@ -853,50 +849,6 @@ class SubstrateTab(object):
         # plt.title(title_str)
 
     #---------------------------------------------------------------------------
-    def retreive_ECM_data(self):
-
-        #### ECM microenvironment
-        xx_ecm, yy_ecm = self.mcds.get_2D_ECM_mesh()  # Mesh
-        anisotropy_at_z_equals_zero = self.mcds.get_ECM_field('anisotropy', 0.0)  # Anistropy (used for scaling and contour plot)
-        density_at_z_equals_zero = self.mcds.get_ECM_field('density', 0.0)
-        x_orientation_at_z_equals_zero = self.mcds.data['ecm']['ECM_fields']['x_fiber_orientation'][:, :, 0]
-        y_orientation_at_z_equals_zero = self.mcds.data['ecm']['ECM_fields']['y_fiber_orientation'][:, :, 0]
-
-        return xx_ecm, yy_ecm, anisotropy_at_z_equals_zero, density_at_z_equals_zero, x_orientation_at_z_equals_zero, y_orientation_at_z_equals_zero
-
-    #---------------------------------------------------------------------------
-    def create_quiver_plot(self, scaling_values: dict, x_mesh: dict, y_mesh: dict, x_orientation: dict, y_orientation: dict, quiver_options: dict=None):
-        
-        if quiver_options is None:
-            mask = scaling_values > 0.0001
-            ECM_x = np.multiply(x_orientation, scaling_values)
-            ECM_y = np.multiply(y_orientation, scaling_values)
-            # self.ax.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
-            plt.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
-                           pivot='middle', angles='xy', scale_units='inches', scale=12.0, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
-        else:
-            if quiver_options["scale_quiver"] is True:
-                sfact = 0.45   # rwh 0.6
-                scaling_values = scaling_values * sfact
-                ECM_x = np.multiply(x_orientation, scaling_values)
-                ECM_y = np.multiply(y_orientation, scaling_values)
-            else:
-                ECM_x = x_orientation
-                ECM_y = y_orientation
-
-            # q = ax.quiver(xx_ecm[mask], yy_ecm[mask], scaled_ECM_x[mask], scaled_ECM_y[mask], pivot='middle', angles='xy', scale_units='inches', scale=2.0, headwidth=0,
-            #               width=0.0015)  ## What is the deal with the line segment lengths shifting as the plots progress when I don't ue teh scaling??
-
-            # mask out zero vectors
-            mask = scaling_values > 0.0001
-            if quiver_options["mask_quiver"] is True:
-                self.ax.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
-                               pivot='middle', angles='xy', scale_units='inches', scale=12.0, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
-            else:
-                self.ax.quiver(x_mesh, y_mesh, ECM_x, ECM_y,
-                pivot='middle', angles='xy', scale_units='inches', scale=12.0, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
-
-    #---------------------------------------------------------------------------
     # assume "frame" is cell frame #, unless Cells is togggled off, then it's the substrate frame #
     # def plot_substrate(self, frame, grid):
     def plot_substrate(self, frame):
@@ -1095,19 +1047,13 @@ class SubstrateTab(object):
             snapshot = xml_fname[:-4]
             # load cell and microenvironment data
             # mcds = pyMCDS(snapshot + '.xml', folder)
-            self.mcds = pyMCDS(snapshot + '.xml', self.output_dir)
-
+            mcds = pyMCDS(snapshot + '.xml', self.output_dir)
             # load ECM data
-            self.mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
-            xx_ecm, yy_ecm, ECM_anisotropy, ECM_density, ECM_x_orientation, ECM_y_orientation = self.retreive_ECM_data()
+            mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
 
-            # self.create_quiver_plot(scaling_values=ECM_anisotropy, x_mesh=xx_ecm, y_mesh=yy_ecm, x_orientation=ECM_x_orientation, y_orientation=ECM_y_orientation, quiver_options=options['quiver_options'])
-            self.create_quiver_plot(scaling_values=ECM_anisotropy, x_mesh=xx_ecm, y_mesh=yy_ecm, x_orientation=ECM_x_orientation, y_orientation=ECM_y_orientation, quiver_options=None)
-
-            #-- rwh commented out:
-            # cell_df = self.mcds.get_cell_df()
-            # xx, yy = mcds.get_2D_mesh()
-            # micro = mcds.get_concentrations('ECM anisotropy', 0.0)
+            cell_df = mcds.get_cell_df()
+            xx, yy = mcds.get_2D_mesh()
+            micro = mcds.get_concentrations('ECM anisotropy', 0.0)
 
             # find levels for microenvironment
             # plane_oxy = mcds.get_concentrations('oxygen', 0.0)
@@ -1116,48 +1062,42 @@ class SubstrateTab(object):
             # levels = np.linspace(1e-14, 38, num_levels)
 
             # arrow lengths depend on anisotropy
-            #rwh comment
-            # micro_scaled = micro
-
-
+            micro_scaled = micro
             #print_stats(micro_scaled)
             #mean = np.mean(micro_scaled.flatten())
+            V_max = 4
+            #K_M = mean
+            K_M = 0.4
+            def curve(x):
+                #return (V_max * x) / (K_M + x)
+                return 0.5 if x > 0.5 else x
 
-            # rwh- large comment out!
-            # V_max = 4
-            # #K_M = mean
-            # K_M = 0.4
-            # def curve(x):
-            #     #return (V_max * x) / (K_M + x)
-            #     return 0.5 if x > 0.5 else x
-
-            # for i in range(len(micro)):
-            #     for j in range(len(micro[i])):
-            #         #micro_scaled[i][j] = 10 *  math.log10(micro[i][j] + 1) / math.log10(2)
-            #         micro_scaled[i][j] = curve(micro[i][j])
+            for i in range(len(micro)):
+                for j in range(len(micro[i])):
+                    #micro_scaled[i][j] = 10 *  math.log10(micro[i][j] + 1) / math.log10(2)
+                    micro_scaled[i][j] = curve(micro[i][j])
                     
-            # micro_scaled = micro
+            micro_scaled = micro
+            #print_stats(micro_scaled)
 
-            # #print_stats(micro_scaled)
+            dy = mcds.data['ecm']['y_vec'][:, :, 0] * micro_scaled
+            dx = mcds.data['ecm']['x_vec'][:, :, 0] * micro_scaled
+            #print(dx.shape)
+            #print('dmag (min, max)', (np.sqrt(dx**2 + dy**2).min(), np.sqrt(dx**2 + dy**2).max()))
 
-            # dy = mcds.data['ecm']['y_vec'][:, :, 0] * micro_scaled
-            # dx = mcds.data['ecm']['x_vec'][:, :, 0] * micro_scaled
-            # #print(dx.shape)
-            # #print('dmag (min, max)', (np.sqrt(dx**2 + dy**2).min(), np.sqrt(dx**2 + dy**2).max()))
+            # normalize lengths -- this needs some fiddling
+            #dx = dx / dx.std()
+            #dy = dy / dy.std()
 
-            # # normalize lengths -- this needs some fiddling
-            # #dx = dx / dx.std()
-            # #dy = dy / dy.std()
+            # if we want the arrows the same length instead
+            dx_unscaled = mcds.data['ecm']['x_vec'][:, :, 0]
+            dy_unscaled = mcds.data['ecm']['y_vec'][:, :, 0]
 
-            # # if we want the arrows the same length instead
-            # dx_unscaled = mcds.data['ecm']['x_vec'][:, :, 0]
-            # dy_unscaled = mcds.data['ecm']['y_vec'][:, :, 0]
+            # mask out zero vectors
+            mask = np.logical_or(dx > 1e-4, dy > 1e-4)
 
-            # # mask out zero vectors
-            # mask = np.logical_or(dx > 1e-4, dy > 1e-4)
-
-            # # add quiver layer with scaled arrows ###
-            # plt.quiver(xx[mask], yy[mask], dx[mask], dy[mask], pivot='middle', angles='xy', units='width', headwidth=0, width=.0015)
+            # add quiver layer with scaled arrows ###
+            plt.quiver(xx[mask], yy[mask], dx[mask], dy[mask], pivot='middle', angles='xy', units='width', headwidth=0, width=.0015)
 
 
         # --------  Plot the cells (on top of substrate and vectors)
