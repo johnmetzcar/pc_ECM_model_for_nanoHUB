@@ -26,7 +26,7 @@ class ConfigTab(object):
 #        label_domain = Label('Domain ($\mu M$):')
         label_domain = Label('Domain (micron):')
         stepsize = 10
-        disable_domain = True
+        disable_domain = False
         self.xmin = FloatText(step=stepsize,
             # description='$X_{min}$',
             description='Xmin',
@@ -84,6 +84,18 @@ class ConfigTab(object):
             disabled = disable_domain,
             layout=Layout(width=constWidth),
         )
+        self.xdelta_ecm = BoundedFloatText(
+            min=1.,
+            description='dx_ECM',   
+            disabled = disable_domain,
+            layout=Layout(width=constWidth),
+        )
+        self.ydelta_ecm = BoundedFloatText(
+            min=1.,
+            description='dy_ECM',
+            disabled = disable_domain,
+            layout=Layout(width=constWidth),
+        )
         """
         self.tdelta = BoundedFloatText(
             min=0.01,
@@ -111,8 +123,10 @@ class ConfigTab(object):
         self.toggle2D.observe(toggle2D_cb)
         """
 
-        x_row = HBox([self.xmin, self.xmax, self.xdelta])
-        y_row = HBox([self.ymin, self.ymax, self.ydelta])
+        # x_row = HBox([self.xmin, self.xmax, self.xdelta])
+        # y_row = HBox([self.ymin, self.ymax, self.ydelta])
+        x_row = HBox([self.xmin, self.xmax, self.xdelta, self.xdelta_ecm])
+        y_row = HBox([self.ymin, self.ymax, self.ydelta, self.ydelta_ecm])
         z_row = HBox([self.zmin, self.zmax, self.zdelta])
 
         self.omp_threads = BoundedIntText(
@@ -239,10 +253,14 @@ class ConfigTab(object):
         self.xmin.value = float(xml_root.find(".//x_min").text)
         self.xmax.value = float(xml_root.find(".//x_max").text)
         self.xdelta.value = float(xml_root.find(".//dx").text)
+        # user_parameters.ECM_dx
+        self.xdelta_ecm.value = float(xml_root.find(".//user_parameters//ECM_dx").text)
     
         self.ymin.value = float(xml_root.find(".//y_min").text)
         self.ymax.value = float(xml_root.find(".//y_max").text)
         self.ydelta.value = float(xml_root.find(".//dy").text)
+        # user_parameters.ECM_dy
+        self.ydelta_ecm.value = float(xml_root.find(".//user_parameters//ECM_dy").text)
     
         self.zmin.value = float(xml_root.find(".//z_min").text)
         self.zmax.value = float(xml_root.find(".//z_max").text)
@@ -275,9 +293,15 @@ class ConfigTab(object):
         xml_root.find(".//x_min").text = str(self.xmin.value)
         xml_root.find(".//x_max").text = str(self.xmax.value)
         xml_root.find(".//dx").text = str(self.xdelta.value)
+        # self.xdelta_ecm.value = float(xml_root.find(".//user_parameters//ECM_dx").text)
+        # xml_root.find(".//user_parameters//ECM_dx").text = str(self.xdelta.value)
+        xml_root.find(".//user_parameters").find(".//ECM_dx").text = str(self.xdelta_ecm.value)
+
         xml_root.find(".//y_min").text = str(self.ymin.value)
         xml_root.find(".//y_max").text = str(self.ymax.value)
         xml_root.find(".//dy").text = str(self.ydelta.value)
+        xml_root.find(".//user_parameters").find(".//ECM_dy").text = str(self.ydelta_ecm.value)
+
         xml_root.find(".//z_min").text = str(self.zmin.value)
         xml_root.find(".//z_max").text = str(self.zmax.value)
         xml_root.find(".//dz").text = str(self.zdelta.value)
