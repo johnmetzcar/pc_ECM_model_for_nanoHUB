@@ -5,6 +5,14 @@ __pycache__
 
 # Dev ignores
 .vscode*
-
+*.o
+myproj
+bin/myproj
+# Please enter the commit message for your changes. Lines starting
 # Misc ignores
 .DS_Store
+
+# output files
+tmpdir/
+src/output/
+
