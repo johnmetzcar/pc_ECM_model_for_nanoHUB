@@ -1501,8 +1501,8 @@ void ECM_informed_motility_update_model_w_memory ( Cell* pCell, Phenotype& pheno
 	// Updates cell bias vector and cell speed based on the ECM density, anisotropy, and fiber direction
 	
 	// find location of variables and base parameter values
-	static int ECM_density_index = microenvironment.find_density_index( "ECM" ); 
-	static int ECM_anisotropy_index = microenvironment.find_density_index( "ECM anisotropy" ); 
+	// static int ECM_density_index = microenvironment.find_density_index( "ECM" ); 
+	// static int ECM_anisotropy_index = microenvironment.find_density_index( "ECM anisotropy" ); 
 	static int o2_index = microenvironment.find_density_index( "oxygen" ); 
 
 	static int max_cell_speed_index = pCell->custom_data.find_variable_index( "max speed" ); 
