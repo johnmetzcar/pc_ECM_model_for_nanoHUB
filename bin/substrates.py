@@ -83,6 +83,7 @@ class SubstrateTab(object):
         self.show_nucleus = False
         self.show_edge = True
         self.show_vectors = True
+        self.show_anisotropy = False
 
         # initial value
         self.field_index = 4
@@ -304,22 +305,40 @@ class SubstrateTab(object):
         self.substrates_toggle.observe(substrates_toggle_cb)
 
         #------
-        self.vectors_toggle = Checkbox(
-            description='Vectors',
+        self.ecm_vectors_toggle = Checkbox(
+            description='ECM',
             disabled=False,
             value=True,
 #           layout=Layout(width=constWidth2),
         )
-        def vectors_toggle_cb(b):
+        def ecm_vectors_toggle_cb(b):
             # self.update()
             self.i_plot.update()
-            self.show_vectors = self.vectors_toggle.value
+            self.show_vectors = self.ecm_vectors_toggle.value
             # if (self.vectors_toggle.value):
             #     self.show_vectors = False
             # else:
             #     self.show_vectors = True
 
-        self.vectors_toggle.observe(vectors_toggle_cb)
+        self.ecm_vectors_toggle.observe(ecm_vectors_toggle_cb)
+
+        #------
+#         self.anisotropy_toggle = Checkbox(
+#             description='Anisotropy',
+#             disabled=False,
+#             value=True,
+# #           layout=Layout(width=constWidth2),
+#         )
+#         def anisotropy_toggle_cb(b):
+#             # self.update()
+#             self.i_plot.update()
+#             self.show_anisotropy = self.anisotropy_toggle.value
+#             # if (self.vectors_toggle.value):
+#             #     self.show_vectors = False
+#             # else:
+#             #     self.show_vectors = True
+
+#         self.anisotropy_toggle.observe(anisotropy_toggle_cb)
 
         #--------------
         self.grid_toggle = Checkbox(
@@ -366,7 +385,8 @@ class SubstrateTab(object):
                             display='flex'))
         # row2b = Box( [self.substrates_toggle, self.grid_toggle], layout=Layout(border='1px solid black',
         # row2b = Box( [self.substrates_toggle, ], layout=Layout(border='1px solid black',
-        row2b = Box( [self.substrates_toggle, self.vectors_toggle], layout=Layout(border='1px solid black',
+        # row2b = Box( [self.substrates_toggle, self.ecm_vectors_toggle, self.anisotropy_toggle], layout=Layout(border='1px solid black',
+        row2b = Box( [self.substrates_toggle, self.ecm_vectors_toggle], layout=Layout(border='1px solid black',
                             width='50%',
                             height='',
                             align_items='stretch',
@@ -561,7 +581,7 @@ class SubstrateTab(object):
         self.field_index = self.mcds_field.value + 4
 
         field_name = self.field_dict[self.mcds_field.value]
-        # print('mcds_field_cb: '+field_name)
+        # print('mcds_field_changed_cb: '+field_name)
         self.cmap_min.value = self.field_min_max[field_name][0]
         self.cmap_max.value = self.field_min_max[field_name][1]
         self.i_plot.update()
@@ -868,12 +888,16 @@ class SubstrateTab(object):
     def create_quiver_plot(self, scaling_values: dict, x_mesh: dict, y_mesh: dict, x_orientation: dict, y_orientation: dict, quiver_options: dict=None):
         
         if quiver_options is None:
+            # print("create_quiver_plot(): _options= None. doing plt.quiver")
             mask = scaling_values > 0.0001
             ECM_x = np.multiply(x_orientation, scaling_values)
             ECM_y = np.multiply(y_orientation, scaling_values)
+            # print("ECM_x= ",ECM_x)
+            alpha_val = 0.3
+            alpha_val = 1.0
             # self.ax.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
             plt.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
-                           pivot='middle', angles='xy', scale_units='inches', scale=12.0, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
+                           pivot='middle', angles='xy', scale_units='inches', scale=12.0, headwidth=0,headlength=0, headaxislength=0, alpha = alpha_val)
         else:
             if quiver_options["scale_quiver"] is True:
                 sfact = 0.45   # rwh 0.6
@@ -890,11 +914,45 @@ class SubstrateTab(object):
             # mask out zero vectors
             mask = scaling_values > 0.0001
             if quiver_options["mask_quiver"] is True:
-                self.ax.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
+                # self.ax.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
+                plt.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
                                pivot='middle', angles='xy', scale_units='inches', scale=12.0, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
             else:
-                self.ax.quiver(x_mesh, y_mesh, ECM_x, ECM_y,
+                # self.ax.quiver(x_mesh, y_mesh, ECM_x, ECM_y,
+                plt.quiver(x_mesh, y_mesh, ECM_x, ECM_y,
                 pivot='middle', angles='xy', scale_units='inches', scale=12.0, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
+
+    #---------------------------------------------------------------------------
+    def create_contour_plot(self, x_mesh: dict, y_mesh: dict, data_to_contour: dict, contour_options=None, options: dict=None):
+        ### best options are probably to just allow defaults, search for max and min for limits, or maybe insist on limits ...
+        ### another obvious option - and this coudl be a global to reset ... you could even change it with function calls
+        ### countour color maps ...
+
+        if contour_options is None:
+            # cs = self.ax.contourf(x_mesh, y_mesh, data_to_contour, cmap="Reds")
+            cs = plt.contourf(x_mesh, y_mesh, data_to_contour, cmap="Reds")
+            # self.fig.colorbar(cs, ax=self.ax)
+            self.fig.colorbar(cs)
+            # cbar = self.fig.colorbar(substrate_plot)
+            # self.fig.show()
+        else:
+            # Make levels for contours
+            contour_spacing = np.linspace(contour_options['lowest_contour'], contour_options['upper_contour'], contour_options['number_of_levels'])
+
+            cs = self.ax.contourf(x_mesh, y_mesh, data_to_contour, cmap=contour_options['color_map_name'], levels=contour_spacing)
+
+            if contour_options['color_bar'] is True:
+                divider = make_axes_locatable(self.ax)
+                cax = divider.append_axes("right", size="5%", pad=0.10)
+                # other fancy things you can do with colorbars - https://stackoverflow.com/questions/16595138/standalone-colorbar-matplotlib
+                if options is None:
+                    cb = self.fig.colorbar(cs, cax=cax, format='%.3f')
+                elif options['produce_for_panel'] is False:
+                    cb = self.fig.colorbar(cs, cax=cax, format='%.3f')
+                else:
+                    tick_spacing = np.linspace(contour_options['lowest_contour'], contour_options['upper_contour'], 5)
+                    cb = self.fig.colorbar(cs, cax=cax, format='%.2f', ticks=tick_spacing)
+                    cb.ax.tick_params(labelsize=20)
 
     #---------------------------------------------------------------------------
     # assume "frame" is cell frame #, unless Cells is togggled off, then it's the substrate frame #
@@ -981,109 +1039,128 @@ class SubstrateTab(object):
             M = info_dict['multiscale_microenvironment']
             #     global_field_index = int(mcds_field.value)
             #     print('plot_substrate: field_index =',field_index)
-            f = M[self.field_index, :]   # 4=tumor cells field, 5=blood vessel density, 6=growth substrate
-            # plt.clf()
-            # my_plot = plt.imshow(f.reshape(400,400), cmap='jet', extent=[0,20, 0,20])
-        
-            # self.fig = plt.figure(figsize=(18.0,15))  # this strange figsize results in a ~square contour plot
 
-            # plt.subplot(grid[0:1, 0:1])
-            # main_ax = self.fig.add_subplot(grid[0:1, 0:1])  # works, but tiny upper-left region
-            #main_ax = self.fig.add_subplot(grid[0:2, 0:2])
-            # main_ax = self.fig.add_subplot(grid[0:, 0:2])
-            #main_ax = self.fig.add_subplot(grid[:-1, 0:])   # nrows, ncols
-            #main_ax = self.fig.add_subplot(grid[0:, 0:])   # nrows, ncols
-            #main_ax = self.fig.add_subplot(grid[0:4, 0:])   # nrows, ncols
+            # print("--------- self.field_index= ",self.field_index)
+            if self.field_index == 4:   # only handle "oxygen" (index=4)
+                f = M[self.field_index, :]   # 4=tumor cells field, 5=blood vessel density, 6=growth substrate
+                # plt.clf()
+                # my_plot = plt.imshow(f.reshape(400,400), cmap='jet', extent=[0,20, 0,20])
+            
+                # self.fig = plt.figure(figsize=(18.0,15))  # this strange figsize results in a ~square contour plot
+
+                # plt.subplot(grid[0:1, 0:1])
+                # main_ax = self.fig.add_subplot(grid[0:1, 0:1])  # works, but tiny upper-left region
+                #main_ax = self.fig.add_subplot(grid[0:2, 0:2])
+                # main_ax = self.fig.add_subplot(grid[0:, 0:2])
+                #main_ax = self.fig.add_subplot(grid[:-1, 0:])   # nrows, ncols
+                #main_ax = self.fig.add_subplot(grid[0:, 0:])   # nrows, ncols
+                #main_ax = self.fig.add_subplot(grid[0:4, 0:])   # nrows, ncols
 
 
-            # main_ax = self.fig.add_subplot(grid[0:3, 0:])   # nrows, ncols
-            # main_ax = self.fig.add_subplot(111)   # nrows, ncols
+                # main_ax = self.fig.add_subplot(grid[0:3, 0:])   # nrows, ncols
+                # main_ax = self.fig.add_subplot(111)   # nrows, ncols
 
 
-            # plt.rc('font', size=10)  # TODO: does this affect the Cell plots fonts too? YES. Not what we want.
+                # plt.rc('font', size=10)  # TODO: does this affect the Cell plots fonts too? YES. Not what we want.
 
-            #     fig.set_tight_layout(True)
-            #     ax = plt.axes([0, 0.05, 0.9, 0.9 ]) #left, bottom, width, height
-            #     ax = plt.axes([0, 0.0, 1, 1 ])
-            #     cmap = plt.cm.viridis # Blues, YlOrBr, ...
-            #     im = ax.imshow(f.reshape(100,100), interpolation='nearest', cmap=cmap, extent=[0,20, 0,20])
-            #     ax.grid(False)
+                #     fig.set_tight_layout(True)
+                #     ax = plt.axes([0, 0.05, 0.9, 0.9 ]) #left, bottom, width, height
+                #     ax = plt.axes([0, 0.0, 1, 1 ])
+                #     cmap = plt.cm.viridis # Blues, YlOrBr, ...
+                #     im = ax.imshow(f.reshape(100,100), interpolation='nearest', cmap=cmap, extent=[0,20, 0,20])
+                #     ax.grid(False)
 
-            # print("substrates.py: ------- numx, numy = ", self.numx, self.numy )
-            # if (self.numx == 0):   # need to parse vals from the config.xml
-            #     # print("--- plot_substrate(): full_fname=",full_fname)
-            #     fname = os.path.join(self.output_dir, "config.xml")
-            #     tree = ET.parse(fname)
-            #     xml_root = tree.getroot()
-            #     self.xmin = float(xml_root.find(".//x_min").text)
-            #     self.xmax = float(xml_root.find(".//x_max").text)
-            #     dx = float(xml_root.find(".//dx").text)
-            #     self.ymin = float(xml_root.find(".//y_min").text)
-            #     self.ymax = float(xml_root.find(".//y_max").text)
-            #     dy = float(xml_root.find(".//dy").text)
-            #     self.numx =  math.ceil( (self.xmax - self.xmin) / dx)
-            #     self.numy =  math.ceil( (self.ymax - self.ymin) / dy)
+                # print("substrates.py: ------- numx, numy = ", self.numx, self.numy )
+                # if (self.numx == 0):   # need to parse vals from the config.xml
+                #     # print("--- plot_substrate(): full_fname=",full_fname)
+                #     fname = os.path.join(self.output_dir, "config.xml")
+                #     tree = ET.parse(fname)
+                #     xml_root = tree.getroot()
+                #     self.xmin = float(xml_root.find(".//x_min").text)
+                #     self.xmax = float(xml_root.find(".//x_max").text)
+                #     dx = float(xml_root.find(".//dx").text)
+                #     self.ymin = float(xml_root.find(".//y_min").text)
+                #     self.ymax = float(xml_root.find(".//y_max").text)
+                #     dy = float(xml_root.find(".//dy").text)
+                #     self.numx =  math.ceil( (self.xmax - self.xmin) / dx)
+                #     self.numy =  math.ceil( (self.ymax - self.ymin) / dy)
 
-            try:
-                xgrid = M[0, :].reshape(self.numy, self.numx)
-                ygrid = M[1, :].reshape(self.numy, self.numx)
-            except:
-                print("substrates.py: mismatched mesh size for reshape: numx,numy=",self.numx, self.numy)
-                pass
-#                xgrid = M[0, :].reshape(self.numy, self.numx)
-#                ygrid = M[1, :].reshape(self.numy, self.numx)
-
-            num_contours = 15
-            levels = MaxNLocator(nbins=num_contours).tick_values(self.cmap_min.value, self.cmap_max.value)
-            contour_ok = True
-            if (self.cmap_fixed.value):
                 try:
-                    # substrate_plot = main_ax.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy, self.numx), levels=levels, extend='both', cmap=self.field_cmap.value, fontsize=self.fontsize)
-                    substrate_plot = plt.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy, self.numx), levels=levels, extend='both', cmap=self.field_cmap.value, fontsize=self.fontsize)
+                    xgrid = M[0, :].reshape(self.numy, self.numx)
+                    ygrid = M[1, :].reshape(self.numy, self.numx)
                 except:
-                    contour_ok = False
-                    # print('got error on contourf 1.')
-            else:    
-                try:
-                    # substrate_plot = main_ax.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy,self.numx), num_contours, cmap=self.field_cmap.value)
-                    substrate_plot = plt.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy,self.numx), num_contours, cmap=self.field_cmap.value)
-                except:
-                    contour_ok = False
-                    # print('got error on contourf 2.')
+                    print("substrates.py: mismatched mesh size for reshape: numx,numy=",self.numx, self.numy)
+                    pass
+    #                xgrid = M[0, :].reshape(self.numy, self.numx)
+    #                ygrid = M[1, :].reshape(self.numy, self.numx)
 
-            if (contour_ok):
-                # main_ax.set_title(self.title_str, fontsize=self.fontsize)
-                plt.title(self.title_str, fontsize=self.fontsize)
-                # main_ax.tick_params(labelsize=self.fontsize)
-            # cbar = plt.colorbar(my_plot)
-                # cbar = self.fig.colorbar(substrate_plot, ax=main_ax)
-                cbar = self.fig.colorbar(substrate_plot)
-                cbar.ax.tick_params(labelsize=self.fontsize)
-                # cbar = main_ax.colorbar(my_plot)
-                # cbar.ax.tick_params(labelsize=self.fontsize)
-            # axes_min = 0
-            # axes_max = 2000
+                num_contours = 15
+                levels = MaxNLocator(nbins=num_contours).tick_values(self.cmap_min.value, self.cmap_max.value)
+                contour_ok = True
+                if (self.cmap_fixed.value):
+                    try:
+                        # substrate_plot = main_ax.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy, self.numx), levels=levels, extend='both', cmap=self.field_cmap.value, fontsize=self.fontsize)
+                        substrate_plot = plt.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy, self.numx), levels=levels, extend='both', cmap=self.field_cmap.value, fontsize=self.fontsize)
+                    except:
+                        contour_ok = False
+                        # print('got error on contourf 1.')
+                else:    
+                    try:
+                        # substrate_plot = main_ax.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy,self.numx), num_contours, cmap=self.field_cmap.value)
+                        substrate_plot = plt.contourf(xgrid, ygrid, M[self.field_index, :].reshape(self.numy,self.numx), num_contours, cmap=self.field_cmap.value)
+                    except:
+                        contour_ok = False
+                        # print('got error on contourf 2.')
 
-            # main_ax.set_xlim([self.xmin, self.xmax])
-            # main_ax.set_ylim([self.ymin, self.ymax])
-            plt.xlim(self.xmin, self.xmax)
-            plt.ylim(self.ymin, self.ymax)
+                if (contour_ok):
+                    # main_ax.set_title(self.title_str, fontsize=self.fontsize)
+                    plt.title(self.title_str, fontsize=self.fontsize)
+                    # main_ax.tick_params(labelsize=self.fontsize)
+                # cbar = plt.colorbar(my_plot)
+                    # cbar = self.fig.colorbar(substrate_plot, ax=main_ax)
+                    cbar = self.fig.colorbar(substrate_plot)
+                    cbar.ax.tick_params(labelsize=self.fontsize)
+                    # cbar = main_ax.colorbar(my_plot)
+                    # cbar.ax.tick_params(labelsize=self.fontsize)
+                # axes_min = 0
+                # axes_max = 2000
 
-            # if (frame == 0):  # maybe allow substrate grid display later
-            #     xs = np.linspace(self.xmin,self.xmax,self.numx)
-            #     ys = np.linspace(self.ymin,self.ymax,self.numy)
-            #     hlines = np.column_stack(np.broadcast_arrays(xs[0], ys, xs[-1], ys))
-            #     vlines = np.column_stack(np.broadcast_arrays(xs, ys[0], xs, ys[-1]))
-            #     grid_lines = np.concatenate([hlines, vlines]).reshape(-1, 2, 2)
-            #     line_collection = LineCollection(grid_lines, color="gray", linewidths=0.5)
-            #     # ax = main_ax.gca()
-            #     main_ax.add_collection(line_collection)
-            #     # ax.set_xlim(xs[0], xs[-1])
-            #     # ax.set_ylim(ys[0], ys[-1])
+                # main_ax.set_xlim([self.xmin, self.xmax])
+                # main_ax.set_ylim([self.ymin, self.ymax])
+                plt.xlim(self.xmin, self.xmax)
+                plt.ylim(self.ymin, self.ymax)
+
+                # if (frame == 0):  # maybe allow substrate grid display later
+                #     xs = np.linspace(self.xmin,self.xmax,self.numx)
+                #     ys = np.linspace(self.ymin,self.ymax,self.numy)
+                #     hlines = np.column_stack(np.broadcast_arrays(xs[0], ys, xs[-1], ys))
+                #     vlines = np.column_stack(np.broadcast_arrays(xs, ys[0], xs, ys[-1]))
+                #     grid_lines = np.concatenate([hlines, vlines]).reshape(-1, 2, 2)
+                #     line_collection = LineCollection(grid_lines, color="gray", linewidths=0.5)
+                #     # ax = main_ax.gca()
+                #     main_ax.add_collection(line_collection)
+                #     # ax.set_xlim(xs[0], xs[-1])
+                #     # ax.set_ylim(ys[0], ys[-1])
+
+            elif self.field_index == 5:   # handle "ECM anisotropy" (index=5)
+                xml_fname = "output%08d.xml" % self.substrate_frame
+                snapshot = xml_fname[:-4]
+                self.mcds = pyMCDS(snapshot + '.xml', self.output_dir)
+                self.mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
+
+                xx_ecm, yy_ecm, ECM_anisotropy, ECM_density, ECM_x_orientation, ECM_y_orientation = self.retreive_ECM_data()
+
+                self.create_contour_plot(x_mesh=xx_ecm, y_mesh=yy_ecm, data_to_contour=ECM_anisotropy)
 
 
-        #---------  Plot vectors 
         if (self.show_vectors):
+            # print("--------- calling mcds.load_ecm")
+            xml_fname = "output%08d.xml" % self.substrate_frame
+            snapshot = xml_fname[:-4]
+            self.mcds = pyMCDS(snapshot + '.xml', self.output_dir)
+            self.mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
+            xx_ecm, yy_ecm, ECM_anisotropy, ECM_density, ECM_x_orientation, ECM_y_orientation = self.retreive_ECM_data()
+
             if (not self.substrates_toggle.value):
                 self.fig = plt.figure(figsize=(self.figsize_width_svg, self.figsize_height_svg))
                 if (self.customized_output_freq and (frame > self.max_svg_frame_pre_therapy)):
@@ -1091,18 +1168,21 @@ class SubstrateTab(object):
                 else:
                     self.substrate_frame = int(frame / self.modulo)
 
-            xml_fname = "output%08d.xml" % self.substrate_frame
-            snapshot = xml_fname[:-4]
+            # xml_fname = "output%08d.xml" % self.substrate_frame
+            # snapshot = xml_fname[:-4]
             # load cell and microenvironment data
             # mcds = pyMCDS(snapshot + '.xml', folder)
-            self.mcds = pyMCDS(snapshot + '.xml', self.output_dir)
-
-            # load ECM data
-            self.mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
-            xx_ecm, yy_ecm, ECM_anisotropy, ECM_density, ECM_x_orientation, ECM_y_orientation = self.retreive_ECM_data()
+            # self.mcds = pyMCDS(snapshot + '.xml', self.output_dir)
 
             # self.create_quiver_plot(scaling_values=ECM_anisotropy, x_mesh=xx_ecm, y_mesh=yy_ecm, x_orientation=ECM_x_orientation, y_orientation=ECM_y_orientation, quiver_options=options['quiver_options'])
             self.create_quiver_plot(scaling_values=ECM_anisotropy, x_mesh=xx_ecm, y_mesh=yy_ecm, x_orientation=ECM_x_orientation, y_orientation=ECM_y_orientation, quiver_options=None)
+
+
+        #---------  Plot ECM anisotropy
+        if (self.show_anisotropy):
+            # self.create_contour_plot(x_mesh=xx_ecm, y_mesh=yy_ecm, data_to_contour=ECM_anisotropy, contour_options=options["contour_options"], options=options)
+            self.create_contour_plot(x_mesh=xx_ecm, y_mesh=yy_ecm, data_to_contour=ECM_anisotropy)
+
 
             #-- rwh commented out:
             # cell_df = self.mcds.get_cell_df()
