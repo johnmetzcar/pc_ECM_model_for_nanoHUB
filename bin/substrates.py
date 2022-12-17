@@ -82,8 +82,16 @@ class SubstrateTab(object):
         self.cells_alpha = 0.7  
         self.show_nucleus = False
         self.show_edge = True
+
+        # related to ECM
         self.show_vectors = True
         self.show_anisotropy = False
+        self.xx_ecm = None
+        self.yy_ecm = None
+        self.ECM_anisotropy = None 
+        self.ECM_density = None
+        self.ECM_x_orientation = None
+        self.ECM_y_orientation = None
 
         # initial value
         self.field_index = 4
@@ -904,16 +912,26 @@ class SubstrateTab(object):
 
             hrs = int(mins/60)
             days = int(hrs/24)
-            self.title_str = 'substrate: %dd, %dh, %dm' % (int(days),(hrs%24), mins - (hrs*60))
+            # self.title_str = 'substrate: %dd, %dh, %dm' % (int(days),(hrs%24), mins - (hrs*60))
+            subname = 'oxygen'  # assume self.field_index == 4:
+            if self.field_index == 5:
+                subname = 'anisotropy' 
+            self.title_str = '%s: %dd, %dh, %dm' % (subname,int(days),(hrs%24), mins - (hrs*60))
 
             info_dict = {}
             scipy.io.loadmat(full_fname, info_dict)
             M = info_dict['multiscale_microenvironment']
 
+            if (self.field_index == 5) or self.show_vectors:
+                xml_fname = "output%08d.xml" % self.substrate_frame
+                snapshot = xml_fname[:-4]
+                self.mcds = pyMCDS(snapshot + '.xml', self.output_dir)
+                self.mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
+                self.xx_ecm, self.yy_ecm, self.ECM_anisotropy, self.ECM_density, self.ECM_x_orientation, self.ECM_y_orientation = self.retreive_ECM_data()
+
             #-------------------------
             if self.field_index == 4:   # only handle "oxygen" (index=4)
                 f = M[self.field_index, :]   # 4=first real substrate
-
                 try:
                     xgrid = M[0, :].reshape(self.numy, self.numx)
                     ygrid = M[1, :].reshape(self.numy, self.numx)
@@ -947,24 +965,10 @@ class SubstrateTab(object):
 
             #-------------------------
             elif self.field_index == 5:   # handle "ECM anisotropy" (index=5)
-                xml_fname = "output%08d.xml" % self.substrate_frame
-                snapshot = xml_fname[:-4]
-                self.mcds = pyMCDS(snapshot + '.xml', self.output_dir)
-                self.mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
-
-                xx_ecm, yy_ecm, ECM_anisotropy, ECM_density, ECM_x_orientation, ECM_y_orientation = self.retreive_ECM_data()
-
-                self.create_anisotropy_contour_plot(x_mesh=xx_ecm, y_mesh=yy_ecm, data_to_contour=ECM_anisotropy)
+                self.create_anisotropy_contour_plot(x_mesh=self.xx_ecm, y_mesh=self.yy_ecm, data_to_contour=self.ECM_anisotropy)
 
         #-------------------------
         if (self.show_vectors):
-            # print("--------- calling mcds.load_ecm")
-            xml_fname = "output%08d.xml" % self.substrate_frame
-            snapshot = xml_fname[:-4]
-            self.mcds = pyMCDS(snapshot + '.xml', self.output_dir)
-            self.mcds.load_ecm(snapshot + '_ECM.mat', self.output_dir)
-            xx_ecm, yy_ecm, ECM_anisotropy, ECM_density, ECM_x_orientation, ECM_y_orientation = self.retreive_ECM_data()
-
             if (not self.substrates_toggle.value):
                 self.fig = plt.figure(figsize=(self.figsize_width_svg, self.figsize_height_svg))
                 if (self.customized_output_freq and (frame > self.max_svg_frame_pre_therapy)):
@@ -972,7 +976,7 @@ class SubstrateTab(object):
                 else:
                     self.substrate_frame = int(frame / self.modulo)
 
-            self.create_quiver_plot(scaling_values=ECM_anisotropy, x_mesh=xx_ecm, y_mesh=yy_ecm, x_orientation=ECM_x_orientation, y_orientation=ECM_y_orientation, quiver_options=None)
+            self.create_quiver_plot(scaling_values=self.ECM_anisotropy, x_mesh=self.xx_ecm, y_mesh=self.yy_ecm, x_orientation=self.ECM_x_orientation, y_orientation=self.ECM_y_orientation, quiver_options=None)
 
             if self.title_str == '':  # if we haven't plotted anything yet
                 self.substrate_frame = int(frame / self.modulo)
@@ -995,7 +999,7 @@ class SubstrateTab(object):
 
         #---------  Plot ECM anisotropy
         if (self.show_anisotropy):
-            self.create_anisotropy_contour_plot(x_mesh=xx_ecm, y_mesh=yy_ecm, data_to_contour=ECM_anisotropy)
+            self.create_anisotropy_contour_plot(x_mesh=self.xx_ecm, y_mesh=self.yy_ecm, data_to_contour=self.ECM_anisotropy)
 
 
         # --------  Plot the cells (on top of substrate and vectors)
