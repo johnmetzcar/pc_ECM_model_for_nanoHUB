@@ -291,7 +291,7 @@ class SubstrateTab(object):
 
         #---------------------
         self.substrates_toggle = Checkbox(
-            description='Substrates',
+            description='Substrates/ECM fields',
             disabled=False,
             value=True,
 #           layout=Layout(width=constWidth2),
@@ -314,7 +314,7 @@ class SubstrateTab(object):
 
         #------
         self.ecm_vectors_toggle = Checkbox(
-            description='ECM',
+            description='ECM orientations',
             disabled=False,
             value=True,
 #           layout=Layout(width=constWidth2),
