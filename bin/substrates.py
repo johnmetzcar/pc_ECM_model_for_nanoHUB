@@ -967,6 +967,9 @@ class SubstrateTab(object):
             elif self.field_index == 5:   # handle "ECM anisotropy" (index=5)
                 self.create_anisotropy_contour_plot(x_mesh=self.xx_ecm, y_mesh=self.yy_ecm, data_to_contour=self.ECM_anisotropy)
 
+            elif self.field_index == 6:   # handle "ECM density" (index=6)
+                self.create_anisotropy_contour_plot(x_mesh=self.xx_ecm, y_mesh=self.yy_ecm, data_to_contour=self.ECM_density)
+
         #-------------------------
         if (self.show_vectors):
             if (not self.substrates_toggle.value):
