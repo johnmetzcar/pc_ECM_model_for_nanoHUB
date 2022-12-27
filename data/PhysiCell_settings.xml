@@ -93,7 +93,7 @@
 		<div_background type="divider" description="---Model Selection parameters---"/>
 		<cell_motility_ECM_interaction_model_selector description="follower chemotaxis/no follower hysteresis, follower hysteresis/no follower chemotaxis" type="string">follower chemotaxis/no follower hysteresis</cell_motility_ECM_interaction_model_selector>
 		<discrete_ECM_remodeling hidden="false" description="ECM remodeling: 1 = finite speed; 0 = instant" type="int">1</discrete_ECM_remodeling>
-		<link_anisotropy_and_bias hidden="true" description="Selects if chemotaxtic bias on followers is coupled exactly to ECM anisotropy or not: 1 = not coupled; 0 = coupled" type="int">0</link_anisotropy_and_bias>
+		<link_anisotropy_and_bias hidden="false" description="Selects if chemotaxtic bias on followers is coupled exactly to ECM anisotropy or not: 1 = not coupled; 0 = coupled" type="int">0</link_anisotropy_and_bias>
 		<ecm_update_model hidden="true" description="Specifies ECM reorientation model: ecm_update_from_cell_motility_vector or ecm_update_from_cell_velocity_vector" type="string">ecm_update_from_cell_motility_vector</ecm_update_model>
 		<normalize_ECM_influenced_motility_vector hidden="false" description="Normalize follower motility vector" type="bool">false</normalize_ECM_influenced_motility_vector>
 		<duration_of_uE_conditioning hidden="false" type="double" units="minutes">10</duration_of_uE_conditioning>

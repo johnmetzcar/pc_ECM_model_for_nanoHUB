@@ -254,38 +254,46 @@ class UserTab(object):
           step=0.1,
           style=style, layout=widget_layout)
 
-        param_name28 = Button(description='normalize_ECM_influenced_motility_vector', disabled=True, layout=name_button_layout)
+        param_name28 = Button(description='link_anisotropy_and_bias', disabled=True, layout=name_button_layout)
         param_name28.style.button_color = 'tan'
+
+        self.link_anisotropy_and_bias = IntText(
+          value=0,
+          step=1,
+          style=style, layout=widget_layout)
+
+        param_name29 = Button(description='normalize_ECM_influenced_motility_vector', disabled=True, layout=name_button_layout)
+        param_name29.style.button_color = 'tan'
 
         self.normalize_ECM_influenced_motility_vector = Checkbox(
           value=False,
           style=style, layout=widget_layout)
 
-        param_name29 = Button(description='duration_of_uE_conditioning', disabled=True, layout=name_button_layout)
-        param_name29.style.button_color = 'lightgreen'
+        param_name30 = Button(description='duration_of_uE_conditioning', disabled=True, layout=name_button_layout)
+        param_name30.style.button_color = 'lightgreen'
 
         self.duration_of_uE_conditioning = FloatText(
           value=10,
           step=1,
           style=style, layout=widget_layout)
 
-        param_name30 = Button(description='freeze_uE_profile', disabled=True, layout=name_button_layout)
-        param_name30.style.button_color = 'tan'
+        param_name31 = Button(description='freeze_uE_profile', disabled=True, layout=name_button_layout)
+        param_name31.style.button_color = 'tan'
 
         self.freeze_uE_profile = Checkbox(
           value=False,
           style=style, layout=widget_layout)
 
-        param_name31 = Button(description='unit_test_setup', disabled=True, layout=name_button_layout)
-        param_name31.style.button_color = 'lightgreen'
+        param_name32 = Button(description='unit_test_setup', disabled=True, layout=name_button_layout)
+        param_name32.style.button_color = 'lightgreen'
 
         self.unit_test_setup = IntText(
           value=0,
           step=1,
           style=style, layout=widget_layout)
 
-        param_name32 = Button(description='march_unit_test_setup', disabled=True, layout=name_button_layout)
-        param_name32.style.button_color = 'tan'
+        param_name33 = Button(description='march_unit_test_setup', disabled=True, layout=name_button_layout)
+        param_name33.style.button_color = 'tan'
 
         self.march_unit_test_setup = IntText(
           value=0,
@@ -364,14 +372,16 @@ class UserTab(object):
         units_button35.style.button_color = 'lightgreen'
         units_button36 = Button(description='', disabled=True, layout=units_button_layout) 
         units_button36.style.button_color = 'tan'
-        units_button37 = Button(description='minutes', disabled=True, layout=units_button_layout) 
-        units_button37.style.button_color = 'lightgreen'
-        units_button38 = Button(description='', disabled=True, layout=units_button_layout) 
-        units_button38.style.button_color = 'tan'
+        units_button37 = Button(description='', disabled=True, layout=units_button_layout) 
+        units_button37.style.button_color = 'tan'
+        units_button38 = Button(description='minutes', disabled=True, layout=units_button_layout) 
+        units_button38.style.button_color = 'lightgreen'
         units_button39 = Button(description='', disabled=True, layout=units_button_layout) 
-        units_button39.style.button_color = 'lightgreen'
+        units_button39.style.button_color = 'tan'
         units_button40 = Button(description='', disabled=True, layout=units_button_layout) 
-        units_button40.style.button_color = 'tan'
+        units_button40.style.button_color = 'lightgreen'
+        units_button41 = Button(description='', disabled=True, layout=units_button_layout) 
+        units_button41.style.button_color = 'tan'
 
         desc_button1 = Button(description='Initial ECM anisotropy' , tooltip='Initial ECM anisotropy', disabled=True, layout=desc_button_layout) 
         desc_button1.style.button_color = 'lightgreen'
@@ -427,6 +437,8 @@ class UserTab(object):
         desc_button32.style.button_color = 'tan'
         desc_button33 = Button(description='ECM remodeling: 1 = finite speed; 0 = instant' , tooltip='ECM remodeling: 1 = finite speed; 0 = instant', disabled=True, layout=desc_button_layout) 
         desc_button33.style.button_color = 'lightgreen'
+        desc_button34 = Button(description='Selects if chemotaxtic bias on followers is coupled exactly to ECM anisotropy or not: 1 = not coupled; 0 = coupled' , tooltip='Selects if chemotaxtic bias on followers is coupled exactly to ECM anisotropy or not: 1 = not coupled; 0 = coupled', disabled=True, layout=desc_button_layout) 
+        desc_button34.style.button_color = 'tan'
         desc_button36 = Button(description='Normalize follower motility vector' , tooltip='Normalize follower motility vector', disabled=True, layout=desc_button_layout) 
         desc_button36.style.button_color = 'tan'
         desc_button37 = Button(description='' , tooltip='', disabled=True, layout=desc_button_layout) 
@@ -465,11 +477,12 @@ class UserTab(object):
         row28 = [param_name25, self.ECM_orientation_setup, units_button32, desc_button28] 
         row32 = [param_name26, self.cell_motility_ECM_interaction_model_selector, units_button34, desc_button32] 
         row33 = [param_name27, self.discrete_ECM_remodeling, units_button35, desc_button33] 
-        row36 = [param_name28, self.normalize_ECM_influenced_motility_vector, units_button36, desc_button36] 
-        row37 = [param_name29, self.duration_of_uE_conditioning, units_button37, desc_button37] 
-        row38 = [param_name30, self.freeze_uE_profile, units_button38, desc_button38] 
-        row39 = [param_name31, self.unit_test_setup, units_button39, desc_button39] 
-        row40 = [param_name32, self.march_unit_test_setup, units_button40, desc_button40] 
+        row34 = [param_name28, self.link_anisotropy_and_bias, units_button36, desc_button34] 
+        row36 = [param_name29, self.normalize_ECM_influenced_motility_vector, units_button37, desc_button36] 
+        row37 = [param_name30, self.duration_of_uE_conditioning, units_button38, desc_button37] 
+        row38 = [param_name31, self.freeze_uE_profile, units_button39, desc_button38] 
+        row39 = [param_name32, self.unit_test_setup, units_button40, desc_button39] 
+        row40 = [param_name33, self.march_unit_test_setup, units_button41, desc_button40] 
 
         box_layout = Layout(display='flex', flex_flow='row', align_items='stretch', width='100%')
         box1 = Box(children=row1, layout=box_layout)
@@ -499,6 +512,7 @@ class UserTab(object):
         box28 = Box(children=row28, layout=box_layout)
         box32 = Box(children=row32, layout=box_layout)
         box33 = Box(children=row33, layout=box_layout)
+        box34 = Box(children=row34, layout=box_layout)
         box36 = Box(children=row36, layout=box_layout)
         box37 = Box(children=row37, layout=box_layout)
         box38 = Box(children=row38, layout=box_layout)
@@ -541,6 +555,7 @@ class UserTab(object):
           div_row8,
           box32,
           box33,
+          box34,
           box36,
           box37,
           box38,
@@ -584,6 +599,7 @@ class UserTab(object):
         self.ECM_orientation_setup.value = (uep.find('.//ECM_orientation_setup').text)
         self.cell_motility_ECM_interaction_model_selector.value = (uep.find('.//cell_motility_ECM_interaction_model_selector').text)
         self.discrete_ECM_remodeling.value = int(uep.find('.//discrete_ECM_remodeling').text)
+        self.link_anisotropy_and_bias.value = int(uep.find('.//link_anisotropy_and_bias').text)
         self.normalize_ECM_influenced_motility_vector.value = ('true' == (uep.find('.//normalize_ECM_influenced_motility_vector').text.lower()) )
         self.duration_of_uE_conditioning.value = float(uep.find('.//duration_of_uE_conditioning').text)
         self.freeze_uE_profile.value = ('true' == (uep.find('.//freeze_uE_profile').text.lower()) )
@@ -627,6 +643,7 @@ class UserTab(object):
         uep.find('.//ECM_orientation_setup').text = str(self.ECM_orientation_setup.value)
         uep.find('.//cell_motility_ECM_interaction_model_selector').text = str(self.cell_motility_ECM_interaction_model_selector.value)
         uep.find('.//discrete_ECM_remodeling').text = str(self.discrete_ECM_remodeling.value)
+        uep.find('.//link_anisotropy_and_bias').text = str(self.link_anisotropy_and_bias.value)
         uep.find('.//normalize_ECM_influenced_motility_vector').text = str(self.normalize_ECM_influenced_motility_vector.value)
         uep.find('.//duration_of_uE_conditioning').text = str(self.duration_of_uE_conditioning.value)
         uep.find('.//freeze_uE_profile').text = str(self.freeze_uE_profile.value)
