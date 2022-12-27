@@ -797,7 +797,7 @@ class SubstrateTab(object):
 
     #---------------------------------------------------------------------------
     def create_quiver_plot(self, scaling_values: dict, x_mesh: dict, y_mesh: dict, x_orientation: dict, y_orientation: dict, quiver_options: dict=None):
-        
+        # Just always using None for nanoHUB
         if quiver_options is None:
             # print("create_quiver_plot(): _options= None. doing plt.quiver")
             mask = scaling_values > 0.0001
@@ -823,10 +823,10 @@ class SubstrateTab(object):
             mask = scaling_values > 0.0001
             if quiver_options["mask_quiver"] is True:
                 plt.quiver(x_mesh[mask], y_mesh[mask], ECM_x[mask], ECM_y[mask],
-                               pivot='middle', angles='xy', scale_units='inches', scale=12.0, units='width', width=0.0025, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
+                               pivot='middle', angles='xy', scale_units='inches', scale=9.0, units='width', width=0.0025, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
             else:
                 plt.quiver(x_mesh, y_mesh, ECM_x, ECM_y,
-                pivot='middle', angles='xy', scale_units='inches', scale=12.0, units='width', width=0.0025, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
+                pivot='middle', angles='xy', scale_units='inches', scale=9.0, units='width', width=0.0025, headwidth=0,headlength=0, headaxislength=0, alpha = 0.3)
 
     #---------------------------------------------------------------------------
     def create_anisotropy_contour_plot(self, x_mesh: dict, y_mesh: dict, data_to_contour: dict, contour_options=None, options: dict=None):

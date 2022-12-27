@@ -2692,7 +2692,6 @@ void write_ECM_Data_matlab( std::string filename )
 
     int size_of_each_datum = 8;
 
-    std::cout << __FILE__ << ": write_ECM_Data_matlab(): number_of_data_entries= " << number_of_data_entries  << std::endl;
 	
 	// static int ECM_anisotropy_index = microenvironment.find_density_index( "ECM anisotropy" ); 
 	// static int ECM_density_index = microenvironment.find_density_index( "ECM" ); 
