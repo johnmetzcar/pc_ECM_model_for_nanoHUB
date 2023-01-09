@@ -7,110 +7,130 @@
 </style>
 
 
-<h2>Introduction</h2>
-<p>A group of cells can move together from one area in the body to another through collective cell migration.  Evidence from Cheung et al.[1] suggests that in certain breast cancer cells, some cells lead a collection of following cells to invade other tissues.  This is an important behavior to understand as it can lead to metastasis forming.  The behavior observed by Cheung et al. is that certain cells (expressing cytokeratin-14) pull on the extracellular matrix (ECM), causing other cells to follow them, resulting in collective migration.</p>
+<h2>ECM-based cell-cell communication</h2>
 
-<p>The ECM model is built on PhysiCell[2], an open source cell-based, multicellular 3-D modeling framework written in C++. If you are not already familiar with PhysiCell please start by reviewing it (see references and Install section below) prior to diving deeply into the modeling code here.</p>
+<p>Modification of extracellular matrix (ECM) is an important method of multi-cellular communication. This simulator enables exploring a remodelable model of ECM using a leader-follower cell phenotype interaction model inspired by the cancer biology literature [1]. In general, how the speeds of signal generation and other parameters impact emergent results such as which form (if any) of collective migration (collective invasion, stigmergy, or both) emerge.</p>
 
-<p>The ECM model is made up of a set of small ECM units, each having 3 primary components: fiber orientation, anisotropy, and density. In our code, we have two cell types: leader cells (K14+) and follower cells (K14-). In the general model, cells and the ECM are capable of a bidirectional relationship. In our specific example, leaders can modify the ECM but are not affected by the ECM, while the follower cells are affected by the ECM but cannot change it.</p>
+<p>The ECM and leader-follower models are implemented in PhysiCell[2], an open source cell-based, multicellular 3-D modeling framework written in C++. More information can be found in [2] or at the <a href="http://physicell.org/">PhysiCell website</a>. The ECM is modeled as a set of small ECM elements, each having 3 locally averaged properities: fiber orientation, anisotropy, and density. There are two cell types: leader cells and follower cells. Leaders (shown in blue) can modify the ECM (generating the communication signal) but are not affected by the ECM, while the follower cells (yellow) are affected by the ECM by changes in motility (direction and/or speed) but cannot change it [3].</p>
 
+<p>This model is available as a pre-print [3] with source code available <a href="https://github.com/PhysiCell-Models/collective-invasion"> here</a>.</p>
+
+<p style="text-align: center;"><a target="_self"><img alt="NA" src="https://github.com/johnmetzcar/pc_ECM_model_for_nanoHUB/raw/master/images/Figure-5_Collective_migration_is_robust.png" style="width: 400px; height: 300px;" /></a></p>
+
+<h2>Exploring the model</h2>
+
+<p>You can follow these suggestions to familiarize yourself with the model.</p>
+
+<p>1) Run this model using the default parameters. This will be produce the right hand side of the figure above</p>
+
+<p>2) Change anisotropy_increase_rate to 0.001 and fiber_realignment_rate to 1. This will decrease the collective behavior - eliminating collective invasion and leaving many followers in the center of the domain.</p>
+
+<p>3) Change discrete_ECM_remodeling to 0. Note now the ECM is instantly remodeled - generating strong, clear signals for followers to read (view the anisotropy field). This will recover behavior similar to the default parameters and produce the left side of the figure included above.</p>
+
+<p>4) Change default_cell_speed to 1.0 and then 0.25 - producing stigmergy and a non-changing morphology.</p>
+
+<p>5) Now, you can enjoy yourself changing other parameters and creating new responses.</p>
+
+<p>Note that anisotropy and density are bound between 0 and 1. One can safely set the minimum and maximum contours at those values. Likewise, the maximum oxygen is 38 mmHg with 6 being a lower reasonable limit. <!-- 
+<p>Modify the parameters in the "config basics" and "user params" tabs. Click the "run" button once ready.</p>
+<p>To view the ECM cell, substrate and fiber plots, click the "Out: Plots" tab, and slide the bar to advance through simulation frames. Note that as the simulation runs, the "max" field (maximum frame number) will increase, so you can view more simulation frames.  You can select a substrate from the drop-down menu and toggle the fibers.</p>
+<p>To run the model without ECM influence, set “default_ECM_sensitivity” and “default_hysteresis_bias” to 0.0.  To run the model with ECM influence but no memory set “default_hysteresis_bias” to 0.0 and  “default_ECM_sensitivity”  to 1.0.  To run the model with ECM and memory set “default_hysteresis_bias” and  “default_ECM_sensitivity”  to 1.0.</p>
+<p>observe differences among those model selections, we recommend setting adhesion to 6.5 and speed to 0.3.  A good alternative is adhesion and speed set to 10 and 0.5, respectively. Ensure that cell_motility_ECM_interaction_model_selector is set to “follower hysteresis/no follower chemotaxis” and that unit_test_setup is 0.0.</p> --></p>
+
+<h1>Model component details</h1>
 
 <h2>Chemical Components</h2>
-<h3>Oxygen</h3>
-<p>Oxygen is introduced at the boundary of the domain with Dirichlet conditions.  The decay-length scale for oxygen is 1,000 μm, with a length scale of 100 μm for cell-dense regions, and boundary value of 38 mmHg.</p>
 
+<h3>Oxygen</h3>
+
+<p>Oxygen is introduced at the boundary of the domain with Dirichlet conditions. The decay-length scale for oxygen is 1,000 &mu;m, with a length scale of 100 &mu;m for cell-dense regions, and boundary value of 38 mmHg.</p>
 
 <h2>Cell Agents</h2>
+
 <p>In PhysiCell, an agent/cell-based modeling program each cell is modeled as a software agent. This leads to each cell possibly containing unique values and behavior. Through simulations paired with the notion that each cell is unique, biologically-relevant behavior has the potential to occur at a macroscopic level, above that of an individual agent. In our example code, we alter the adhesion and base cell-speed parameters to explore how the resulting emergent cell patterns are impacted by the ECM models, looking for biologically relevant behavior.</p>
 
 <h3>Leader cells</h3>
+
 <p>Leader cells represent invasive cells. They follow chemotactically the oxygen gradient, which originates at the simulation boundary. Meaning, the leaders will be actively moving outwards the gradient. They are able to remodel the ECM. Additionally, they are able to respond to both leader and follower cells with physical adhesion and repulsion.</p>
 
 <h3>Follower cells</h3>
-<p>Follower cells represent less invasive but still cancerous cells (a different phenotype than leaders). Follower cells follow cues from the ECM with a 100% sensitivity. Additionally, they are capable of 2-D random motion when no fibers are present in the simulation. Similar to our leader cells, they are able to respond to both leader and follower cells with physical adhesion and repulsion.</p>
 
+<p>Follower cells represent less invasive cells that are a different but similar phenotyp to leaders. Follower cells follow cues from the ECM with a 100% sensitivity (this can be turned down in the simulator) as well as having the ability to be chemotactic when on groomed/altered ECM. Additionally, they do approximate 2-D random motion when no fibers are present in the simulation. Similar to our leader cells, they are able to respond to both leader and follower cells with physical adhesion and repulsion.</p>
 
 <h2>Extracellular Matrix:</h2>
-<p>The Extracellular Matrix (ECM) Model is made of a set of small ECM units, each having 3 components: fiber orientation, anisotropy, and density. In our code, we have two cell types: leader cells (K14+) and follower cells (K14-). Leaders can modify the ECM as they come in contact with it but are not affected by the ECM. Follower cells are affected by the ECM but cannot change it. Taken together (at the level of the cell ensemble), this creates a bidirectional relationship with the ECM and cells.</p>
 
+<p>The Extracellular Matrix (ECM) Model is made of a set of ECM elements (size of elements can be altered), each having 3 components: fiber orientation, anisotropy, and density.</p>
 
 <h3>Fiber orientation:</h3>
+
 <p>( f ) which represents the average orientation of all the local fibers within a given voxel.</p>
-<p>Given as a unit vector.  Although the fibers are represented as a vector, they are better thought of as a line segment as cells have no innate preferred direction of travel based on the “direction” of the unit vector representing fiber orientation. </p>
+
+<p>Given as a unit vector. Although the fibers are represented as a vector, they are better thought of as a line segment as cells have no innate preferred direction of travel based on the &ldquo;direction&rdquo; of the unit vector representing fiber orientation.</p>
 
 <h3>Anisotropy:</h3>
+
 <p>( a ) (ranging from 0 to 1) which represents how aligned the ECM fibers are as well as elements of fiber resistance to deformation and realignment.</p>
+
 <p>An anisotropy value closer to 0 means the fibers are less aligned, while an anisotropy value closer to 1 is more aligned and more resistant to realignment.</p>
 
 <h3>Density:</h3>
-<p>( &rho; ) which represents how much overall fiber is present relative to how much space is available to be filled with fibers. </p>
-<p>A scalar ranging from 0 to 1</p>
 
+<p>( &rho; ) which represents how much overall fiber is present relative to how much space is available to be filled with fibers.</p>
+
+<p>A scalar ranging from 0 to 1</p>
 
 <h3>How Leader Cells affect the ECM:</h3>
 
 <ul>
-    <li>
-        <p>Realign the fibers/ECM proportionally to the cell's speed, a base rate, and how aligned the fibers already are:</p>
-
-        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/alignment.png" class="center" />
-
-        <p>Using the above rate, fibers are updated with time using the following differential equation:</p>
-
-        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/follower_direction.png" class="center" />
-    </li>
-    <li>
-        <p>Alter anisotropy locally in proportion to cell speed:</p>
-
-        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/anisotropy-speed.png" class="center" />
-
-        <p>Using the above function, anisotropy is updated and bound between 0 and 1:</p>
-
-        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/anisotropy_update.png" class="center" />
-    </li>
-    <li>
-        <p>Increase and decrease density (secrete/destroy) to a specific target:</p>
-
-        <img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/density.png" class="center" />
-    </li>
+	<li>
+	<p>Realign the fibers/ECM proportionally to the cell&#39;s speed, a base rate, and how aligned the fibers already are:</p>
+	<img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/alignment.png" />
+	<p>Using the above rate, fibers are updated with time using the following differential equation:</p>
+	<img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/follower_direction.png" /></li>
+	<li>
+	<p>Alter anisotropy locally in proportion to cell speed:</p>
+	<img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/anisotropy-speed.png" />
+	<p>Using the above function, anisotropy is updated and bound between 0 and 1:</p>
+	<img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/anisotropy_update.png" /></li>
+	<li>
+	<p>Increase and decrease density (secrete/destroy) to a specific target:</p>
+	<img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/density.png" /></li>
 </ul>
 
 <h3>ECM effects on Follower Cells:</h3>
 
-<p>Fiber orientation influences the cell's motility vector, while anisotropy controls the amount of influence it has.  To account for the lack of preferred direction of travel along ECM fibers but our storage of the orientation as a vector, we decompose the cell’s motility vector in the direction along the fiber (within that voxel) and the direction perpendicular to the fiber by:</p>
+<p>Fiber orientation influences the cell&#39;s motility vector, while anisotropy controls the amount of influence it has. To account for the lack of preferred direction of travel along ECM fibers but our storage of the orientation as a vector, we decompose the cell&rsquo;s motility vector in the direction along the fiber (within that voxel) and the direction perpendicular to the fiber by:</p>
 
-<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_decomposed.png" class="center" />
+<p><img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_decomposed.png" /></p>
 
 <p>We then take two dot products: the dot product of the motility vector and fiber direction, and the dot product with the motility vector and vector perpendicular to the fiber.</p>
 
-<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_dots.png" class="center" />
+<p><img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_dots.png" /></p>
 
 <p>The actual motility vector is calculated using the equation below:</p>
 
-<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_actual.png" class="center" />
+<p><img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_actual.png" /></p>
 
-<p>Where &gamma; is the produce of the cell's sensitivity to the ECM and the local anisotropy:</p>
+<p>Where &gamma; is the produce of the cell&#39;s sensitivity to the ECM and the local anisotropy:</p>
 
-<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_gamma.png" class="center" />
+<p><img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/mot_gamma.png" /></p>
 
-<p>Overall, this lets the cell’s preferred direction of travel select which direction along the ECM fiber it moves. Cells that are on completely anisotropic ECM and that are highly sensitive to ECM orientation will conduct a 1-D random walk along the fibers. </p>
+<p>Overall, this lets the cell&rsquo;s preferred direction of travel select which direction along the ECM fiber it moves. Cells that are on completely anisotropic ECM and that are highly sensitive to ECM orientation will conduct a 1-D random walk along the fibers.</p>
 
 <h4>Density influences cell speed:</h4>
 
-<p>Too little density and cells have nothing to "grab"</p>
+<p>Too little density and cells have nothing to &quot;grab&quot;</p>
+
 <p>Too much density and cells cannot pass through the dense fibers</p>
+
 <p>This is represented this piecewise function with a peak at &rho;<sub>ideal</sub>:</p>
 
-<img src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/speed_function.png" class="center" />
-
-
-<h2>Basic Instructions</h2>
-<p>Modify the parameters in the "config basics" and "user params" tabs. Click the "run" button once ready.</p>
-<p>To view the ECM cell, substrate and fiber plots, click the "Out: Plots" tab, and slide the bar to advance through simulation frames. Note that as the simulation runs, the "max" field (maximum frame number) will increase, so you can view more simulation frames.  You can select a substrate from the drop-down menu and toggle the fibers.</p>
-<p>To run the model without ECM influence, set “default_ECM_sensitivity” and “default_hysteresis_bias” to 0.0.  To run the model with ECM influence but no memory set “default_hysteresis_bias” to 0.0 and  “default_ECM_sensitivity”  to 1.0.  To run the model with ECM and memory set “default_hysteresis_bias” and  “default_ECM_sensitivity”  to 1.0.</p>
-<p>observe differences among those model selections, we recommend setting adhesion to 6.5 and speed to 0.3.  A good alternative is adhesion and speed set to 10 and 0.5, respectively. Ensure that cell_motility_ECM_interaction_model_selector is set to “follower hysteresis/no follower chemotaxis” and that unit_test_setup is 0.0.</p>
+<p><img class="center" src="https://raw.githubusercontent.com/johnmetzcar/pc_ECM_model_for_nanoHUB/master/images/speed_function.png" /></p>
 
 <h2>References</h2>
-<p>[1] Cheung JK, Gabrielson E, Werb Z, Ewald AJ (2013) Collective invasion in breast cancer requires a conserved basal epithelial program. Cell 155(7):1639-51.  doi: 10.1016/j.cell.2013.11.029</p>
 
-<p>[2] Ghaffarizadeh A, Heiland R, Friedman SH, Mumenthaler SM, Macklin P (2018) PhysiCell: An open source physics-based cell simulator for 3-D multicellular systems. PLoS Comput Biol 14(2): e1005991. https://doi.org/10.1371/journal.pcbi.1005991</p>
+<p>[1] Cheung KJ, Ewald AJ (2014). Illuminating breast cancer invasion: Diverse roles for cell{cell interactions. Current Opinion in Cell Biology 30, 99-111. <a href="https://doi.org/10.1016/j.ceb.2014.07.003">https://doi.org/10.1016/j.ceb.2014.07.003</a></p>
+
+<p>[2] Ghaffarizadeh A, Heiland R, Friedman SH, Mumenthaler SM, Macklin P (2018). PhysiCell: An open source physics-based cell simulator for 3-D multicellular systems. PLoS Comput Biol 14(2): e1005991. <a href="https://doi.org/10.1371/journal.pcbi.1005991">https://doi.org/10.1371/journal.pcbi.1005991</a></p>
+
+<p>[3] Metzcar J, Duggan BS, Fischer B, Murphy M, and Macklin P (2022). A novel model of multicellular communication through extracellular matrix microstructure. 2022.11.21.514608. <a href="10.1101/2022.11.21.514608">10.1101/2022.11.21.514608</a>.</p>
