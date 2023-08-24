@@ -1,35 +1,37 @@
+#VERSION := 1.4.1
 VERSION := $(shell grep . VERSION.txt | cut -f1 -d:)
-PROGRAM_NAME := myproj
-
+PROGRAM_NAME:= myproj
 osRelease = $(shell lsb_release -r | sed -e "s/Release:\W*//" -e "s/\..*//")
 ifeq ($(osRelease),7)
-   hostName = $(shell hostname | sed -e "s:[-_].*::")$(osRelease)
+	hostName = $(shell hostname | sed -e "s:[-_].*::")$(osRelease)
 else
-   hostName = $(shell hostname | sed -e "s:[-_].*::")
+	hostName = $(shell hostname | sed -e "s:[-_].*::")
 endif
 
 ifeq ($(hostName),nanohub7)
-   BIN = ../bin
+	BIN = ../bin
 	MODINIT = . /etc/environ.sh
-   MODCMD = use -e -r anaconda3-5.1
+	MODCMD = use -e -r anaconda3-5.1
 else
 ifeq ($(hostName),rice7)
-   BIN = ../bin/rice7
+	BIN = ../bin/rice7
 	MODINIT = . $(MODULESHOME)/init/sh
-   MODCMD = module purge 2> /dev/null; module load gcc/7.3.0
+	MODCMD = module purge 2> /dev/null; module load gcc/7.3.0
 endif
 ifeq ($(hostName),brown7)
-   BIN = ../bin/brown7
+	BIN = ../bin/brown7
 	MODINIT = . $(MODULESHOME)/init/sh
-   MODCMD = module purge 2> /dev/null; module load gcc/7.3.0
+	MODCMD = module purge 2> /dev/null; module load gcc/7.3.0
 endif
 endif
 
-CC := g++
+# CC := g++
+# CC := g++-mp-7 # typical macports compiler name
+CC := g++ # typical homebrew compiler name
 
 # Check for environment definitions of compiler 
 # e.g., on CC = g++-7 on OSX
-ifdef PHYSICELL_CPP 
+ifdef PHYSICELL_CPP
 	CC := $(PHYSICELL_CPP)
 endif
 
@@ -53,10 +55,21 @@ ARCH := native # best auto-tuning
 
 # CFLAGS := -march=$(ARCH) -Ofast -s -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 # remove the -march arg to avoid SIGILL error on nanoHUB
-#CFLAGS := -march=$(ARCH) -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
 CFLAGS := -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
-# CFLAGS := -O3 -fomit-frame-pointer -fopenmp -m64 -std=c++11
-#CFLAGS := -g -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
+#CFLAGS := -g -march=$(ARCH) -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
+
+ifeq ($(OS),Windows_NT)
+else
+	UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Darwin)
+		UNAME_P := $(shell uname -p)
+		var := $(shell which $(CC) | xargs file)
+		ifeq ($(lastword $(var)),arm64)
+# remove the -march arg to avoid SIGILL error on nanoHUB
+CFLAGS := -O3 -fomit-frame-pointer -mfpmath=both -fopenmp -m64 -std=c++11
+		endif
+	endif
+endif
 
 COMPILE_COMMAND := $(CC) $(CFLAGS) 
 
@@ -64,25 +77,37 @@ BioFVM_OBJECTS := BioFVM_vector.o BioFVM_mesh.o BioFVM_microenvironment.o BioFVM
 BioFVM_utilities.o BioFVM_basic_agent.o BioFVM_MultiCellDS.o BioFVM_agent_container.o 
 
 PhysiCell_core_OBJECTS := PhysiCell_phenotype.o PhysiCell_cell_container.o PhysiCell_standard_models.o \
-PhysiCell_cell.o PhysiCell_custom.o PhysiCell_utilities.o 
-#PhysiCell_cell.o PhysiCell_custom.o PhysiCell_utilities.o PhysiCell_constants.o 
+PhysiCell_cell.o PhysiCell_custom.o PhysiCell_utilities.o PhysiCell_constants.o PhysiCell_basic_signaling.o \
+PhysiCell_signal_behavior.o PhysiCell_rules.o
 
 PhysiCell_module_OBJECTS := PhysiCell_SVG.o PhysiCell_pathology.o PhysiCell_MultiCellDS.o PhysiCell_various_outputs.o \
-PhysiCell_pugixml.o PhysiCell_settings.o
+PhysiCell_pugixml.o PhysiCell_settings.o PhysiCell_geometry.o
 
 # put your custom objects here (they should be in the custom_modules directory)
 
-PhysiCell_custom_module_OBJECTS := AMIGOS-invasion_uncoupled.o extracellular_matrix.o
+PhysiCell_custom_module_OBJECTS := AMIGOS-invasion_uncoupled.o extracellular_matrix.o cell_ECM_interactions.o
+
+PhysiCell_custom_module_OBJECT_2 := invasive_spheroid.o extracellular_matrix.o cell_ECM_interactions.o
+
+PhysiCell_custom_module_OBJECT_3 := fibrosis.o extracellular_matrix.o cell_ECM_interactions.o
 
 pugixml_OBJECTS := pugixml.o
 
 PhysiCell_OBJECTS := $(BioFVM_OBJECTS)  $(pugixml_OBJECTS) $(PhysiCell_core_OBJECTS) $(PhysiCell_module_OBJECTS)
-ALL_OBJECTS := $(PhysiCell_OBJECTS) $(PhysiCell_custom_module_OBJECTS)
 
-# compile the project 
+LEADER_FOLLOWER_OBJECTS := $(PhysiCell_OBJECTS) $(PhysiCell_custom_module_OBJECTS)
+INVASIVE_SPHEROID_OBJECTS := $(PhysiCell_OBJECTS) $(PhysiCell_custom_module_OBJECT_2)
+FIBROSIS_OBJECTS := $(PhysiCell_OBJECTS) $(PhysiCell_custom_module_OBJECT_3)
+#compile the project 
+	
+all: main-ecm.cpp $(LEADER_FOLLOWER_OBJECTS)
+	$(COMPILE_COMMAND) -o $(PROGRAM_NAME) $(LEADER_FOLLOWER_OBJECTS) main-ecm.cpp 
 
-all: main-ecm.cpp $(ALL_OBJECTS)
-	$(COMPILE_COMMAND) -o $(PROGRAM_NAME) $(ALL_OBJECTS) main-ecm.cpp 
+invasive_spheroid: main_invasive_spheroid.cpp $(INVASIVE_SPHEROID_OBJECTS)
+	$(COMPILE_COMMAND) -o invasive_spheroid $(INVASIVE_SPHEROID_OBJECTS) main_invasive_spheroid.cpp 
+
+fibrosis: main_fibrosis.cpp $(FIBROSIS_OBJECTS)
+	$(COMPILE_COMMAND) -o fibrosis $(FIBROSIS_OBJECTS) main_fibrosis.cpp 
 
 # PhysiCell core components	
 
@@ -107,9 +132,15 @@ PhysiCell_utilities.o: ./core/PhysiCell_utilities.cpp
 PhysiCell_custom.o: ./core/PhysiCell_custom.cpp
 	$(COMPILE_COMMAND) -c ./core/PhysiCell_custom.cpp 
 	
-#PhysiCell_constants.o: ./core/PhysiCell_constants.cpp
-#	$(COMPILE_COMMAND) -c ./core/PhysiCell_constants.cpp 
-	
+PhysiCell_constants.o: ./core/PhysiCell_constants.cpp
+	$(COMPILE_COMMAND) -c ./core/PhysiCell_constants.cpp 
+
+PhysiCell_signal_behavior.o: ./core/PhysiCell_signal_behavior.cpp
+	$(COMPILE_COMMAND) -c ./core/PhysiCell_signal_behavior.cpp 
+
+PhysiCell_rules.o: ./core/PhysiCell_rules.cpp
+	$(COMPILE_COMMAND) -c ./core/PhysiCell_rules.cpp 
+
 # BioFVM core components (needed by PhysiCell)
 	
 BioFVM_vector.o: ./BioFVM/BioFVM_vector.cpp
@@ -155,25 +186,47 @@ PhysiCell_MultiCellDS.o: ./modules/PhysiCell_MultiCellDS.cpp
 
 PhysiCell_various_outputs.o: ./modules/PhysiCell_various_outputs.cpp
 	$(COMPILE_COMMAND) -c ./modules/PhysiCell_various_outputs.cpp
-
+	
 PhysiCell_pugixml.o: ./modules/PhysiCell_pugixml.cpp
 	$(COMPILE_COMMAND) -c ./modules/PhysiCell_pugixml.cpp
 	
 PhysiCell_settings.o: ./modules/PhysiCell_settings.cpp
-	$(COMPILE_COMMAND) -c ./modules/PhysiCell_settings.cpp
+	$(COMPILE_COMMAND) -c ./modules/PhysiCell_settings.cpp	
+
+PhysiCell_basic_signaling.o: ./core/PhysiCell_basic_signaling.cpp
+	$(COMPILE_COMMAND) -c ./core/PhysiCell_basic_signaling.cpp 	
+	
+PhysiCell_geometry.o: ./modules/PhysiCell_geometry.cpp
+	$(COMPILE_COMMAND) -c ./modules/PhysiCell_geometry.cpp 
 	
 # user-defined PhysiCell modules
 
 extracellular_matrix.o: ./custom_modules/extracellular_matrix.cpp 
 	$(COMPILE_COMMAND) -c ./custom_modules/extracellular_matrix.cpp
 
+cell_ECM_interactions.o: ./custom_modules/cell_ECM_interactions.cpp 
+	$(COMPILE_COMMAND) -c ./custom_modules/cell_ECM_interactions.cpp
+
 AMIGOS-invasion_uncoupled.o: ./custom_modules/AMIGOS-invasion_uncoupled.cpp 
 	$(COMPILE_COMMAND) -c ./custom_modules/AMIGOS-invasion_uncoupled.cpp
 
+invasive_spheroid.o: ./custom_modules/invasive_spheroid.cpp
+	$(COMPILE_COMMAND) -c ./custom_modules/invasive_spheroid.cpp
+
+fibrosis.o: ./custom_modules/fibrosis.cpp
+	$(COMPILE_COMMAND) -c ./custom_modules/fibrosis.cpp
+
 # cleanup
+
+#reset:
+#	rm -f *.cpp 
+#	cp ./sample_projects/Makefile-default Makefile 
+#	rm -f ./custom_modules/*
+#	touch ./custom_modules/empty.txt 
+	
 # next 2 targets for nanoHUB
-install:
-	$(MODINIT); $(MODCMD);  make all
+install: 
+	$(MODINIT); $(MODCMD); make all
 	install --mode 0755 -D $(PROGRAM_NAME) $(BIN)/$(PROGRAM_NAME)
 
 distclean: clean
@@ -184,34 +237,58 @@ distclean: clean
 clean:
 	rm -f *.o
 	rm -f $(PROGRAM_NAME)
-	
+
 data-cleanup:
 	rm -f *.mat
 	rm -f *.xml
 	rm -f *.svg
-	rm -rf ./output
-	mkdir ./output
+	rm -f ./output/*
 	touch ./output/empty.txt
-	
-FOLDER := output
-FRAMERATE := 24
-movie:
-	#copy $(FOLDER)/snap*.jpg .
-	mencoder "mf://snapshot*.jpg" -ovc lavc -lavcopts vcodec=mpeg4:vbitrate=10000:mbd=2:trell -mf fps=$(FRAMERATE):type=jpg -nosound -o out.avi	
-	# mencoder "mf://snapshot*.jpg" -ovc lavc -lavcopts vcodec=mpeg4:vbitrate=10000:mbd=2:trell -mf fps=$(FRAMERATE):type=jpg -nosound -o out.mp4 -of mpeg
-	ffmpeg -i out.avi -vcodec libx264 -pix_fmt yuv420p -strict -2 -acodec aac out.mp4
-	ffmpeg -r 24 -f image2 -i snapshot%08d.jpg -vcodec libx264 -pix_fmt yuv420p -strict -2 -acodec aac out1.mp4
-	#del snap*.jpg
+
+data-cleanup-all:
+	rm -f *.mat
+	rm -f *.xml
+	rm -f *.svg
+	rm -f *.pov
+	rm -f ./Output/*
+	rm -f ./SVG/*
+
+data-cleanup-light:
+	rm -f *.mat
+	rm -f *.xml
+	rm -f *.svg
+	rm -f *.pov
+	rm -f ./Output/*.mat
+	rm -f ./Output/*.xml
+	rm -f ./Output/*.svg
+	rm -f ./Output/*.png
+	rm -f ./SVG/*
+	touch ./output/empty.txt
+
 # archival 
-	
-checkpoint: 
-	zip -r $$(date +%b_%d_%Y_%H%M).zip Makefile *.cpp *.h config/*.xml custom_modules/* 
 	
 zip:
 	zip -r latest.zip Makefile* *.cpp *.h BioFVM/* config/* core/* custom_modules/* matlab/* modules/* sample_projects/* 
 	cp latest.zip $$(date +%b_%d_%Y_%H%M).zip
 	cp latest.zip VERSION_$(VERSION).zip 
 	mv *.zip archives/
+
+zip-data:
+	zip -r latest-data.zip Makefile* *.cpp *.h BioFVM/* config/* core/* custom_modules/* matlab/* modules/* output/*.xml output/*.mat output/*.svg output/*.png output/*.m output/*.mov output/*.gif output/*.mp4
+	cp latest-data.zip $$(date +%b_%d_%Y_%H%M).zip
+	cp latest-data.zip VERSION_$(VERSION).zip 
+	mv *.zip data_archives/
+
+zip-source:
+	zip -r latest-data.zip Makefile* *.cpp *.h BioFVM/* config/* core/* custom_modules/* python_imaging/* modules/* output/*.m
+	cp latest-data.zip $$(date +%b_%d_%Y_%H%M).zip
+	cp latest-data.zip VERSION_$(VERSION).zip 
+	mv *.zip data_archives/
+
+move-data:
+	mkdir $$(date +%b_%d_%Y_%H%M)
+	cp -a Makefile* /$$(date +%b_%d_%Y_%H%M)
+	mv /$$(date +%b_%d_%Y_%H%M) data//$$(date +%b_%d_%Y_%H%M)
 	
 tar:
 	tar --ignore-failed-read -czf latest.tar Makefile* *.cpp *.h BioFVM/* config/* core/* custom_modules/* matlab/* modules/* sample_projects/* 

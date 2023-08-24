@@ -67,26 +67,36 @@
 using namespace BioFVM; 
 using namespace PhysiCell;
 
-extern Cell_Definition leader_cell; 
-extern Cell_Definition follower_cell; 
-
+extern Cell_Definition fibroblast; // are these needed?
+extern Cell_Definition cancer_cell; 
+extern Cell_Definition macrophage;
 // overall rules 
 
 void tumor_cell_phenotype_with_oncoprotein( Cell* pCell , Phenotype& phenotype , double dt ) ;// done 
 void chemotaxis_oxygen( Cell* pCell , Phenotype& phenotype , double dt ); // done 
-//void change_speed_ecm(Cell* pCell);
+// Cell-ecm interaction rules
 
-// follower cell rules 
+void fibroblast_ECM_informed_motility_update_w_chemotaxis( Cell* pCell, Phenotype& phenotype, double dt );
 
-void follower_cell_phenotype_model0( Cell* pCell , Phenotype& phenotype , double dt ); 
+void cancer_cell_ECM_informed_motility_update_w_chemotaxis( Cell* pCell, Phenotype& phenotype, double dt );
 
-// leader cell rules
+void update_adhesion( Cell* pCell, Phenotype& phenotype, double dt );
 
-void leader_cell_phenotype_model( Cell* pCell , Phenotype& phenotype , double dt ); 
+void custom_cancer_cell_ECM_remodeling_and_adhesion_function( Cell* pCell, Phenotype& phenotype, double dt );
 
-void follower_cell_phenotype_model( Cell* pCell , Phenotype& phenotype , double dt ); 
+void ECM_remodeling_function( Cell* pCell, Phenotype& phenotype, double dt );
 
-void leader_cell_motility_model0( Cell* pCell , Phenotype& phenotype , double dt ); 
+// cancer cell rules 
+
+void cancer_cell_phenotype_model0( Cell* pCell , Phenotype& phenotype , double dt ); 
+
+// fibroblast cell rules
+
+void fibroblast_phenotype_model( Cell* pCell , Phenotype& phenotype , double dt ); 
+
+void cancer_cell_phenotype_model( Cell* pCell , Phenotype& phenotype , double dt ); 
+
+void fibroblast_motility_model0( Cell* pCell , Phenotype& phenotype , double dt ); 
 
 void switching_phenotype_model( Cell* pCell, Phenotype& phenotype, double dt ); 
 
@@ -100,19 +110,15 @@ class Options
 	int model = 0; 	
 };
 
-
-
-// custom cell phenotype function to scale immunostimulatory factor with hypoxia 
-
-// set the tumor cell properties, then call the function 
 // to set up the tumor cells 
 void create_cell_types( void ); // done 
 void ECM_setup(double numvox);
+void setup_extracellular_matrix( void ); 
 void setup_tissue(void); // done 
 
 // set up the microenvironment to include the immunostimulatory factor 
 void setup_microenvironment( void );  // done 
-
+void ECM_remodeling_and_speed_update( Cell* pCell, Phenotype& phenotype, double dt);
 std::vector<std::string> AMIGOS_invasion_coloring_function( Cell* );
 std::vector<std::string> ECM_anisotropy_coloring_function( Cell* );
 void ecm_update_from_cell(Cell* pCell , Phenotype& phenotype , double dt); // Not currently supporting anisotropy decreasing!! 06.17.19
@@ -127,5 +133,6 @@ void change_migration_bias_vector_ecm(Cell* pCell , Phenotype& phenotype , doubl
 void run_biotransport( double t_max );
 void alter_cell_uptake_secretion_saturation ( void );
 void set_cell_motility_vectors(void); // Runs update_migration_bias for each cell present in a simulation
-void write_ECM_Data_matlab( std::string filename );
+// void SVG_plot_custom( std::string filename , Microenvironment& M, double z_slice , double time, std::vector<std::string> (*cell_coloring_function)(Cell*), std::string line_pattern );
+// void write_ECM_Data_matlab( std::string filename );
 double sign_function (double number);

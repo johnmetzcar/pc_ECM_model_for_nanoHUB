@@ -35,14 +35,21 @@ that will terminate (not pause) the simulation.
 
 <p>1) Run this model using the default parameters. This will be produce the right hand side of the figure above</p>
 
-<p>2) Change anisotropy_increase_rate to 0.001 and fiber_realignment_rate to 1. This will decrease the collective behavior - eliminating collective invasion and leaving many followers in the center of the domain.</p>
+<p>2) In the <b>Cell Types</b> tab, select <code>leader cell</code> from the <b>Cell type</b> drop-down (should be selected by default). In <b>Custom Data</b>, change <code>Anisotropy_increase_rate</code> to 0.001 and fiber_realignment_rate to 1. Run the simulation - this will decrease the collective behavior - eliminating collective invasion and leaving many followers in the center of the domain.</p>
 
-<p>3) Change discrete_ECM_remodeling to 0. Note now the ECM is instantly remodeled - generating strong, clear signals for followers to read (view the anisotropy field). This will recover behavior similar to the default parameters and produce the left side of the figure included above.</p>
+<p>3) To further explore the model, navigate to the <b>User Params</b>) tab and change <code>discrete_ECM_remodeling</code> to 0 (t is the 10th variable from the bottom). Note now the ECM is instantly remodeled - generating strong, clear signals for followers to read (view the anisotropy field). Run the simulation - this will recover behavior similar to the default parameters and produce the left side of the figure included above.</p>
 
-<p>4) Change default_cell_speed to 1.0 and then 0.25 - producing stigmergy and a non-changing morphology.</p>
+<p>4) Change default_cell_speed to 1.0 and then 0.10 (running between changes in parameter settings naturally) - producing stigmergy and a non-changing morphology.</p>
 
 <p>5) Now, you can enjoy yourself changing other parameters and creating new responses. &#128521; </p>
 
+<p> For example, you could return to the default settings:
+    <ul> 
+        <li>And vary the speed!</li>
+        <li>And/or vary the cell-cell adhesion!</li> 
+    </ul>
+</p>
+<p>You might find that leader-follower behavior depends on the balance between speed and cell-cell adhesion, as well as the magnitude of the signals encoded in the ECM (so one could play with those rates as well as the instant remodeling to explore that!)</p>
 Note that anisotropy and density are bound between 0 and 1. One  can safely set the minimum and maximum contours at those values. Likewise, the maximum oxygen is 38 mmHg with 6 being a lower reasonable limit. 
 <!-- 
 <p>Modify the parameters in the "config basics" and "user params" tabs. Click the "run" button once ready.</p>
