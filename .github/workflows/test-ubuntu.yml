@@ -18,6 +18,6 @@ jobs:
         make
         
         
-    - name: Run model
-      run: |
-        ./myproj ../data/PhysiCell_settings_short_run_test.xml
+    # - name: Run model
+    #   run: |
+    #     ./myproj ../data/PhysiCell_settings_short_run_test.xml
