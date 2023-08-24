@@ -1,0 +1,23 @@
+name: Test Ubuntu
+run-name: ${{ github.actor }} 
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build model
+      run: |
+        cd src
+        make
+        
+        
+    - name: Run model
+      run: |
+        ./AMIGOS-invasion config/PhysiCell_settings_short_run_test.xml
