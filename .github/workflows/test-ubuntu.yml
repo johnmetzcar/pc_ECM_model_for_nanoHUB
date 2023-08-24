@@ -20,4 +20,4 @@ jobs:
         
     - name: Run model
       run: |
-        ./myproj config/PhysiCell_settings_short_run_test.xml
+        ./myproj ../data/PhysiCell_settings_short_run_test.xml
